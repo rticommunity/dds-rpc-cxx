@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="function_call.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="robot.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="robot_basic_func.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="robot_test.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="robotPlugin.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="robotSupport.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc_types.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc_typesPlugin.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="rpc_typesSupport.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="common.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="robot_reqrep.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="robot_func.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="function_call.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="request_reply.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="robot_basic_func.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="robotPlugin.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="robotSupport.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc_types.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc_typesPlugin.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rpc_typesSupport.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="sample.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="robot.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="unique_data.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="headers">
+      <UniqueIdentifier>{63fe6228-e517-47b2-8567-c0b3fa5d7b2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources">
+      <UniqueIdentifier>{a7833d3e-feb2-402f-8e15-77b7e2939b88}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

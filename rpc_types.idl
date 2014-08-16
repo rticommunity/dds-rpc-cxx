@@ -1,0 +1,80 @@
+#ifdef BASIC
+
+module dds { module rpc {
+
+const long SUCCESS_RETCODE = 0;
+
+typedef octet UnknownOperation;
+typedef octet UnknownException;
+
+enum SystemExceptionCode_t
+{
+    OK,
+    UNIMPLEMENTED,
+    BAD_PARAMETER,
+    PRECONDITION_NOT_MET,
+    OUT_OF_RESOURCES,
+    NOT_ENABLED,
+    ALREADY_DELETED,
+    ILLEGAL_OPERATION,
+    UNKNOWN_OPERATION,
+    TIMEOUT,
+    INITIALIZE_ERROR,
+    CLIENT_INTERNAL_ERROR,
+    SERVER_INTERNAL_ERROR,
+    SERVER_NOT_FOUND,
+    UNKNOWN
+};
+
+}; // module rpc
+
+#ifdef REDEFINE_DDS_TYPES
+
+typedef octet GuidPrefix_t[12];
+
+struct EntityId_t 
+{
+  octet entityKey[3];
+  octet entityKind;
+};//@top-level false
+
+struct GUID_t
+{
+  GuidPrefix_t guidPrefix; 
+  EntityId_t entityId;
+};//@top-level false
+
+struct SequenceNumber_t
+{
+  long high;
+  unsigned long low;
+};//@top-level false
+
+struct SampleIdentity_t
+{
+  GUID_t guid;
+  SequenceNumber_t seqnum;
+};//@top-level false
+
+#endif // REDEFINE_DDS_TYPES
+
+module rpc {
+
+struct RequestHeader 
+{
+    dds::SampleIdentity_t requestId;
+    string<255> serviceName;
+    string<255> instanceName;
+};//@top-level false
+
+struct ReplyHeader 
+{
+    dds::SampleIdentity_t relatedRequestId;
+};//@top-level false
+
+}; // module rpc
+
+}; // module dds
+
+#endif // BASIC 
+
