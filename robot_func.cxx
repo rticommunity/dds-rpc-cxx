@@ -3,12 +3,10 @@
 
 #include "boost/make_shared.hpp"
 
-#include "robot_basic_func.h"
+#include "RobotControlSupport.h"
 
 using namespace dds::rpc;
 using namespace robot;
-
-#define NO_EXCEPTION_SPEC
 
 #ifdef RTI_WIN32
 #define strcpy(dst, src) strcpy_s(dst, 255, src);
@@ -16,7 +14,7 @@ using namespace robot;
 
 static const float MAX_SPEED = 100;
 
-class MyRobot : public robot::RobotControlServiceImpl
+class MyRobot : public robot::RobotControl
 {
   float speed_;
   Status status_;
@@ -82,16 +80,15 @@ public:
 void server_func(int domainid, const std::string & service_name)
 {
   try {
-    dds::rpc::Server s;
-
     boost::shared_ptr<MyRobot> myrobot =
       boost::make_shared<MyRobot>("Rock-n-Rolling STATUS...");
 
-    ServiceHandle robot_handle =
-      s.register_service(*myrobot, service_name);
-    
+    dds::rpc::Server server;
+
+    RobotControlSupport::Service robot_service(*myrobot, server);
+
     while (true)
-      s.run(DDS::Duration_t::from_millis(500));
+      server.run(DDS::Duration_t::from_millis(500));
   }
   catch (std::exception & ex)
   {
@@ -104,13 +101,9 @@ void server_func(int domainid, const std::string & service_name)
 void client_func(int domainid, const std::string & service_name)
 {
   try {
-    dds::rpc::Client client;
-    //ServiceProxy sp = client.resolve_service<robot::RobotControl>(service_name);
-    robot::RobotControlProxy robotcontrol = 
-      client.resolve_service<robot::RobotControl>(service_name);
-    robotcontrol.bind("robot1");
+    robot::RobotControlSupport::Client robot_client;
+    robot_client.bind("robot1");
     NDDSUtility::sleep(DDS::Duration_t::from_millis(1000));
-    //robot::RobotControlProxy robotcontrol(sp);
 
     float speed = 1;
 
@@ -118,8 +111,8 @@ void client_func(int domainid, const std::string & service_name)
     {
       try 
       {
-        robotcontrol.setSpeed(speed);
-        speed = robotcontrol.getSpeed();
+        robot_client.setSpeed(speed);
+        speed = robot_client.getSpeed();
         printf("getSpeed = %f\n", speed);
         speed *= 2;
         NDDSUtility::sleep(DDS::Duration_t::from_millis(1000));

@@ -19,8 +19,13 @@ void client_rr(int domainid, const std::string & service_name)
     NULL /* listener */,
     DDS::STATUS_MASK_NONE);
 
+  RequesterParams requester_params =
+    dds::rpc::RequesterParams()
+      .domain_participant(participant)
+      .service_name(service_name);
+
   Requester<RobotControl_Request, RobotControl_Reply>
-    requester(participant, service_name);
+    requester(requester_params);
 
   NDDSUtility::sleep(DDS::Duration_t::from_seconds(1));
 
@@ -172,15 +177,20 @@ void server_rr(int domainid, const std::string & service_name)
     NULL /* listener */,
     DDS::STATUS_MASK_NONE);
 
+  ReplierParams replier_params =
+    dds::rpc::ReplierParams()
+      .domain_participant(participant)
+      .service_name(service_name);
+
   Replier<RobotControl_Request, RobotControl_Reply>
-    replier(participant, service_name);
+    replier(replier_params);
 
   while (true)
   {
     Sample<RobotControl_Request> request_sample;
 
     if (replier.receive_request(request_sample,
-      DDS::Duration_t::from_seconds(60)))
+                                DDS::Duration_t::from_seconds(60)))
     {
       print_request(request_sample.data());
 

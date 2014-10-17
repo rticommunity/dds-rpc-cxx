@@ -238,6 +238,7 @@
   <ItemGroup>
     <ClCompile Include="common.cxx" />
     <ClCompile Include="function_call.cxx" />
+    <ClCompile Include="request_reply.cxx" />
     <ClCompile Include="robot.cxx">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -247,7 +248,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="robot_basic_func.cxx" />
+    <ClCompile Include="RobotControlSupport.cxx" />
     <ClCompile Include="robot_func.cxx" />
     <ClCompile Include="robot_reqrep.cxx" />
     <ClCompile Include="robot_test.cxx">
@@ -282,12 +283,16 @@
     <ClCompile Include="rpc_typesSupport.cxx" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common.h" />
     <ClInclude Include="function_call.h" />
+    <ClInclude Include="function_call.hpp" />
     <ClInclude Include="request_reply.h" />
+    <ClInclude Include="request_reply.hpp" />
     <ClInclude Include="robot.h" />
+    <ClInclude Include="RobotControlSupport.h" />
+    <ClInclude Include="RobotControlSupport.hpp" />
     <ClInclude Include="robotPlugin.h" />
     <ClInclude Include="robotSupport.h" />
-    <ClInclude Include="robot_basic_func.h" />
     <ClInclude Include="rpc_types.h" />
     <ClInclude Include="rpc_typesPlugin.h" />
     <ClInclude Include="rpc_typesSupport.h" />

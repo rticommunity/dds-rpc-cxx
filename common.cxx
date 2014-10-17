@@ -1,5 +1,6 @@
-#include "robot.h"
-#include "ndds/ndds_namespace_cpp.h"
+#include "common.h"
+#include "rpc_types.h"
+#include "ndds/ndds_requestreply_cpp.h"
 
 bool operator < (
   const DDS_SampleIdentity_t & lhs,

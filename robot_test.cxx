@@ -11,7 +11,7 @@ void server_func(int domainid, const std::string & service_name);
 
 void usage()
 {
-  printf("Usage: robot_test domainid [client|server]\n");
+  printf("Usage: robot_test domainid [client_rr|client_func|server_rr|server_func]\n");
 }
 
 int main(int argc, char *argv[])

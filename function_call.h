@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "request_reply.h"
+
 #ifdef IMPLEMENTATION_DEPENDENT
 #include "boost/shared_ptr.hpp"
 #include "ndds/ndds_namespace_cpp.h"
@@ -15,21 +17,22 @@ namespace dds { namespace rpc {
   namespace details 
   {
     class ServerImpl;
-    class ServiceHandleImpl;
-    class ClientImpl;
-    class ServiceProxyImplBase;
 
     template <class Iface>
-    class ServiceProxyImpl;
+    class ClientImpl;
+
+    class ServiceParamsImpl;
+    class ClientParamsImpl;
+    class ServiceEndpointImpl;
   }
 
+using DDS::Duration_t;
 using DDS::DomainParticipant;
 using DDS::DataReaderQos;
 using DDS::DataWriterQos;
 
 #endif // IMPLEMENTATION_DEPENDENT
 
-class Executor;
 class Server; 
 enum ServiceStatus { PAUSED, RUNNING };
 
@@ -57,24 +60,12 @@ public:
 class ServiceParams
 {
 #ifdef IMPLEMENTATION_DEPENDENT
-  DDS::DomainParticipant * participant_;
-  DDS::Publisher * publisher_;
-  DDS::Subscriber * subscriber_;
-  DDS::DataWriterQos dwqos_; bool dwqos_def;
-  DDS::DataReaderQos drqos_; bool drqos_def;
-
-  Server * server_;
-
-  std::string service_name_;
-  std::string instance_name_;
-  std::string request_topic_name_;
-  std::string reply_topic_name_;
+  boost::shared_ptr<details::ServiceParamsImpl> impl_;
 #endif
 
 public:
   ServiceParams();
 
-  ServiceParams & server(Server &s);
   ServiceParams & service_name(const std::string &service_name);
   ServiceParams & instance_name(const std::string &instance_name);
   ServiceParams & request_topic_name(const std::string &req_topic);
@@ -85,6 +76,36 @@ public:
   ServiceParams & subscriber(DDS::Subscriber *subscriber);
   ServiceParams & domain_participant(DDS::DomainParticipant *part);
 
+  std::string service_name() const;
+  std::string instance_name() const;
+  std::string request_topic_name() const;
+  std::string reply_topic_name() const;
+  const DDS::DataWriterQos * datawriter_qos() const;
+  const DDS::DataReaderQos * datareader_qos() const;
+  DDS::Publisher * publisher() const;
+  DDS::Subscriber * subscriber() const;
+  DDS::DomainParticipant * domain_participant() const;
+};
+
+class ClientParams
+{
+#ifdef IMPLEMENTATION_DEPENDENT
+  boost::shared_ptr<details::ClientParamsImpl> impl_;
+#endif
+
+public:
+  ClientParams();
+
+  ClientParams & service_name(const std::string &service_name);
+  ClientParams & instance_name(const std::string &instance_name);
+  ClientParams & request_topic_name(const std::string &req_topic);
+  ClientParams & reply_topic_name(const std::string &rep_topic);
+  ClientParams & datawriter_qos(const DDS::DataWriterQos &qos);
+  ClientParams & datareader_qos(const DDS::DataReaderQos &qos);
+  ClientParams & publisher(DDS::Publisher *publisher);
+  ClientParams & subscriber(DDS::Subscriber *subscriber);
+  ClientParams & domain_participant(DDS::DomainParticipant *part);
+
   const std::string & service_name() const;
   const std::string & instance_name() const;
   const std::string & request_topic_name() const;
@@ -94,66 +115,56 @@ public:
   DDS::Publisher * publisher() const;
   DDS::Subscriber * subscriber() const;
   DDS::DomainParticipant * domain_participant() const;
-  Server * server() const;
 };
 
-class ServiceProxy
+//typedef std::vector<ServiceProxy> ServiceProxyList;
+
+
+class ServiceEndpoint
 {
 #ifdef IMPLEMENTATION_DEPENDENT
-  boost::shared_ptr<details::ServiceProxyImplBase> impl_;
+protected:
+  boost::shared_ptr<details::ServiceEndpointImpl> impl_;
 #endif
 
 public:
-  
+
   template <class Impl>
-  ServiceProxy(Impl impl);
+  ServiceEndpoint(Impl impl);
 
-  void bind(const std::string & instance_name);
-  void unbind();
-  bool is_bound() const;
-  const std::string & bound_instance() const;
-  const ServiceParams & service_params() const;
-  details::ServiceProxyImplBase * get_impl() const;
+  template <class TReq>
+  typename rpc_type_traits<TReq>::DataReader  get_request_datareader() const;
+
+  template <class TRep>
+  typename rpc_type_traits<TRep>::DataWriter get_reply_datawriter() const;
+
+  void pause();
+
+  void resume();
+
+  void close();
+
+  ServiceStatus status() const;
+
+  ServiceParams get_service_params() const;
+
 };
 
-typedef std::vector<ServiceProxy> ServiceProxyList;
-
-class Client 
+class ClientEndpoint : public ServiceProxy
 {
-  boost::shared_ptr<details::ClientImpl> impl_;
+public:
 
-  public:
-    // may reuse an exising participant
-    Client();
-    
-    explicit Client(int domainid);
+  template <class Impl>
+  ClientEndpoint(Impl impl);
 
-    explicit Client(DDS::DomainParticipant * part,
-                    DDS::Publisher * pub = 0,
-                    DDS::Subscriber * sub = 0);
-    
-    template <class Iface>
-    typename Iface::ProxyType 
-    resolve_service(
-        const std::string & service_name);
+  template <class TReq>
+  typename rpc_type_traits<TReq>::DataWriter get_request_datawriter() const;
 
-    template <class Iface>
-    typename Iface::ProxyType  
-    resolve_service_instance(
-        const std::string & service_name,
-        const std::string & instance_name);
+  template <class TRep>
+  typename rpc_type_traits<TRep>::DataReader get_reply_datareader() const;
 
-    template <class Iface>
-    ServiceProxy 
-    resolve_service_instances(
-        const std::string & service_name);
-
-    template <class Iface>
-    typename Iface::ProxyType 
-    resolve_service(
-      const ServiceParams &);
+  dds::rpc::ClientParams get_client_params();
 };
-
 
 class ServiceImplBase
 {
@@ -164,7 +175,7 @@ public:
   virtual const ServiceParams & get_service_params() const;
   virtual void set_service_params(const ServiceParams &);
 };
-
+/*
 class ServiceHandle
 {
 public:
@@ -181,37 +192,25 @@ public:
 private:
   boost::shared_ptr<details::ServiceHandleImpl> impl_;
 };
-
+*/
 class Server
 {
 public:
   // may reuse an exising participant
    Server();
 
-   Server(int domainid);
-
    explicit Server(DDS::DomainParticipant * part,
                    DDS::Publisher * pub = 0,
                    DDS::Subscriber * sub = 0);
 
-   template <class ServiceImpl>
-   ServiceHandle register_service(
-     ServiceImpl &service_impl,
-     const std::string service_name);
-
    // blocking
    void run();
 
-   //blocking 
-   void run(Executor &);
-   
-   // not blocking
+   // non-blocking
    void run(const DDS::Duration_t & max_wait);
    
-   Executor * executor();
-
    typedef boost::shared_ptr<details::ServerImpl> unspecified;
-   unspecified get_impl();
+   unspecified get_impl() const;
 
  private:
    boost::shared_ptr<details::ServerImpl> impl_;
@@ -224,3 +223,40 @@ public:
 
 #endif // OMG_DDS_RPC_FUNCTION_CALL_H
 
+/*
+class Client
+{
+boost::shared_ptr<details::ClientImpl> impl_;
+
+public:
+// may reuse an exising participant
+Client();
+
+explicit Client(int domainid);
+
+explicit Client(DDS::DomainParticipant * part,
+DDS::Publisher * pub = 0,
+DDS::Subscriber * sub = 0);
+
+template <class Iface>
+typename Iface::ProxyType
+resolve_service(
+const std::string & service_name);
+
+template <class Iface>
+typename Iface::ProxyType
+resolve_service_instance(
+const std::string & service_name,
+const std::string & instance_name);
+
+template <class Iface>
+ServiceProxy
+resolve_service_instances(
+const std::string & service_name);
+
+template <class Iface>
+typename Iface::ProxyType
+resolve_service(
+const ServiceParams &);
+};
+*/

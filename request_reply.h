@@ -26,6 +26,9 @@
 #include "ndds/ndds_namespace_cpp.h"
 
 namespace dds {
+
+  typedef DDS::Duration_t Duration_t;
+
   namespace rpc {
 
 #ifdef IMPLEMENTATION_DEPENDENT
@@ -33,16 +36,25 @@ namespace dds {
       template <class, class>
       class RequesterImpl;
 
+      class RequesterParamsImpl;
+      class ReplierParamsImpl;
+
       template <class, class>
       class ReplierImpl;
       
       template <class T>
       struct Unwrapper;
+      
+      class ServiceProxyImpl;
+
+      template <class Iface>
+      class ClientImpl;
+    
     } // namespace details
 #endif
 
-    class ReplierParams;
-    class RequesterParams;
+class ReplierParams;
+class RequesterParams;
 
 #ifdef USE_BOOST_FUTURE
 
@@ -137,8 +149,49 @@ struct rpc_type_traits
   // typedef LoanedSamplesType for T.
 };
 
+class ServiceProxy
+{
+protected:
+#ifdef IMPLEMENTATION_DEPENDENT
+  boost::shared_ptr<details::ServiceProxyImpl> impl_;
+#endif
+
+public:
+
+  template <class Impl>
+  ServiceProxy(Impl impl);
+
+  void bind(const std::string & instance_name);
+  void unbind();
+  bool is_bound() const;
+  std::string get_bound_instance_name() const;
+  std::vector<std::string> get_discoverd_service_instances() const;
+
+  void wait_for_service();
+  void wait_for_service(const dds::Duration_t & maxWait);
+
+  void wait_for_service(std::string instanceName);
+  void wait_for_service(const dds::Duration_t & maxWait,
+                        std::string instanceName);
+
+  void wait_for_services(int count);
+  void wait_for_services(const dds::Duration_t & maxWait, int count);
+
+  void wait_for_services(const std::vector<std::string> & instanceNames);
+  void wait_for_services(const dds::Duration_t & maxWait,
+                         const std::vector<std::string> & instanceNames);
+
+  future<void> wait_for_service_async();
+  future<void> wait_for_service_async(std::string instanceName);
+  future<void> wait_for_services_async(int count);
+  future<void> wait_for_services_async(const std::vector<std::string> & instanceNames);
+
+  void close();
+};
+
+
 template <typename TReq, typename TRep>
-class Requester
+class Requester : public ServiceProxy
 {
 public:
 
@@ -154,10 +207,8 @@ public:
 
     typedef RequesterParams Params;
 
-    Requester(
-        DDS::DomainParticipant * participant,
-        const std::string& service_name);
-
+    Requester();
+    
     explicit Requester(const RequesterParams& params);
 
     Requester (const Requester &);
@@ -260,33 +311,13 @@ public:
     LoanedSamples<TRep> read_replies(
         const SampleIdentity_t& related_request_id);
 
-    RequestDataWriter * get_request_datawriter() const;
+    bool receive_nondata_samples(bool enable);
 
-    ReplyDataReader * get_reply_datareader() const;
+    RequesterParams get_requester_params() const;
 
-    RequesterParams get_params() const;
+    RequestDataWriter get_request_datawriter() const;
 
-    void set_datawriter_qos(const DDS::DataWriterQos & dwqos);
-
-    void set_datareader_qos(const DDS::DataReaderQos & drqos);
-    
-    void wait_for_replier(
-      unsigned howmany, 
-      const DDS::Duration_t &);
-
-    void wait_for_replier(
-      const std::string & instance_name, 
-      const DDS::Duration_t &);
-
-    bool bind(const std::string & instance_name);
-    
-    bool unbind();
-    
-    bool is_bound() const;
-
-    const std::string & bound_instance() const;
-
-    void enable_nondata_samples();
+    ReplyDataReader get_reply_datareader() const;
 
 #ifdef IMPLEMENTATION_DEPENDENT
 public:
@@ -308,7 +339,7 @@ private:
 };
 
 template <typename TReq, typename TRep>
-class Replier
+class Replier 
 {
   public:
 
@@ -316,7 +347,7 @@ class Replier
 
     typedef TRep ReplyType;
 
-    typedef typename rpc_type_traits<TRep>::DataWriter ReplierDataWriter;
+    typedef typename rpc_type_traits<TRep>::DataWriter ReplyDataWriter;
 
     typedef typename rpc_type_traits<TReq>::DataReader RequestDataReader;
 
@@ -324,12 +355,7 @@ class Replier
 
     typedef ReplierParams Params;
 
-    Replier(DDSDomainParticipant * participant,
-            const std::string & service_name);
-
-    Replier(DDSDomainParticipant * participant,
-            const std::string & service_name,
-            const std::string & instance_name);
+    Replier();
 
     Replier(const Replier &);
 
@@ -380,17 +406,15 @@ class Replier
 
     LoanedSamplesType read_requests(int max_samples);
 
-    RequestDataReader * get_request_datareader() const;
+    const ReplierParams & get_replier_params() const;
 
-    ReplierDataWriter * get_reply_datawriter() const;
+    bool receive_nondata_samples(bool enable);
 
-    const ReplierParams & get_params() const;
+    RequestDataReader get_request_datareader() const;
 
-    void set_datawriter_qos(const DDS::DataWriterQos & dwqos);
+    ReplyDataWriter get_reply_datawriter() const;
 
-    void set_datareader_qos(const DDS::DataReaderQos & drqos);
-
-    void enable_nondata_samples();
+    void close();
 
 #ifdef IMPLEMENTATION_DEPENDENT
 public:
@@ -482,13 +506,17 @@ public:
     DDS::DomainParticipant * domain_participant() const;
     ListenerBase * simple_requester_listener() const;
     ListenerBase * requester_listener() const;
-    const std::string * service_name() const;
-    const std::string * request_topic_name() const;
-    const std::string * reply_topic_name() const;
+    std::string service_name() const;
+    std::string request_topic_name() const;
+    std::string reply_topic_name() const;
     const DDS::DataWriterQos * datawriter_qos() const;
     const DDS::DataReaderQos * datareader_qos() const;
     DDS::Publisher * publisher() const;
     DDS::Subscriber * subscriber() const;
+
+#ifdef IMPLEMENTATION_DEPENDENT
+    boost::shared_ptr<details::RequesterParamsImpl> impl_;
+#endif // IMPLEMENTATION_DEPENDENT
 };     
 
 
@@ -518,21 +546,25 @@ public:
     DDS::DomainParticipant * domain_participant() const;
     ListenerBase * simple_replier_listener() const;
     ListenerBase * replier_listener() const;
-    const std::string * service_name() const;
-    const std::string * instance_name() const;
-    const std::string * request_topic_name() const;
-    const std::string * reply_topic_name() const;
+    std::string service_name() const;
+    std::string instance_name() const;
+    std::string request_topic_name() const;
+    std::string reply_topic_name() const;
     const DDS::DataWriterQos * datawriter_qos() const;
     const DDS::DataReaderQos * datareader_qos() const;
     DDS::Publisher * publisher() const;
     DDS::Subscriber * subscriber() const;
+
+#ifdef IMPLEMENTATION_DEPENDENT
+    boost::shared_ptr<details::ReplierParamsImpl> impl_;
+#endif // IMPLEMENTATION_DEPENDENT
 };
 
 } // namespace rpc
 
 } // namespace dds 
 
-#include "request_reply.cxx"
+#include "request_reply.hpp"
 
 #endif // OMG_DDS_RPC_REQUEST_REPLY_H
 

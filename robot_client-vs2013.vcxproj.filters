@@ -7,9 +7,6 @@
     <ClCompile Include="robot.cxx">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="robot_basic_func.cxx">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="robot_test.cxx">
       <Filter>sources</Filter>
     </ClCompile>
@@ -37,15 +34,18 @@
     <ClCompile Include="robot_func.cxx">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="RobotControlSupport.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="request_reply.cxx">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function_call.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="request_reply.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="robot_basic_func.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="robotPlugin.h">
@@ -70,6 +70,21 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="unique_data.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RobotControlSupport.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RobotControlSupport.hpp">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="function_call.hpp">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="request_reply.hpp">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
