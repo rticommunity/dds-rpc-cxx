@@ -35,8 +35,15 @@ all:
 	@false
 endif
 
+ifeq ($(CXX), clang++)
+  CXXFLAGS = -m32 -std=c++0x \
+             -Wno-return-type-c-linkage \
+             -Wno-deprecated-register
+else
+  CXXFLAGS = -m32 -std=c++0x
+endif
+
 CXX = colorgcc
-CXXFLAGS = -m32 -std=c++0x
 CXXLD = g++
 CXXLDFLAGS = -m32 -static-libgcc
 syslibs_i86Linux2.6gcc4.4.5 = -ldl -lnsl -lm -lpthread -lrt
@@ -59,10 +66,18 @@ LIBS = -L$(NDDSHOME)/lib/i86Linux2.6gcc4.4.5 \
         -lboost_thread -lboost_system
 
 CDRSOURCES    = robot.idl
-COMMONSOURCES = robot.cxx robotPlugin.cxx robotSupport.cxx \
-                rpc_types.cxx rpc_typesSupport.cxx rpc_typesPlugin.cxx \
-                function_call.cxx robot_reqrep.cxx common.cxx \
-                robot_basic_func.cxx robot_func.cxx
+COMMONSOURCES = common.cxx \
+                function_call.cxx \
+                request_reply.cxx \
+                RobotControlSupport.cxx \
+                robot_func.cxx \
+                robot_reqrep.cxx \
+                robot.cxx \
+                robotPlugin.cxx \
+                robotSupport.cxx \
+                rpc_types.cxx \
+                rpc_typesSupport.cxx \
+                rpc_typesPlugin.cxx 
 EXEC          = robot_test
 DIRECTORIES   = objs.dir objs/i86Linux2.6gcc4.4.5.dir
 COMMONOBJS    = $(COMMONSOURCES:%.cxx=objs/i86Linux2.6gcc4.4.5/%.o)
