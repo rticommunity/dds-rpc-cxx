@@ -215,6 +215,9 @@ using boost::future;
 
 using concurrency::task;
 
+template <class R>
+class future;
+
 template <class ResultType>
 class shared_future
 {
