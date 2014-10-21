@@ -2,42 +2,6 @@
 
 namespace dds {
   namespace rpc {
-
-    template <class Impl>
-    ServiceEndpoint::ServiceEndpoint(Impl impl)
-      : impl_(impl)
-    { }
-
-    template <class Impl>
-    ClientEndpoint::ClientEndpoint(Impl impl)
-      : ServiceProxy(impl)
-    { }
-
-    template <class TReq>
-    typename dds_type_traits<TReq>::DataWriter 
-      ClientEndpoint::get_request_datawriter() const
-    {
-        auto client_endpoint_impl =
-          static_cast <details::ClientEndpointImpl *>(impl_.get());
-        
-        return client_endpoint_impl->get_request_datawriter<TReq>();
-    }
-
-    template <class TRep>
-    typename dds_type_traits<TRep>::DataReader 
-      ClientEndpoint::get_reply_datareader() const
-    {
-        auto client_endpoint_impl =
-          static_cast <details::ClientEndpointImpl *>(impl_.get());
-
-        return client_endpoint_impl->get_request_datawriter<TRep>();
-    }
-
-  } // namespace rpc
-} // namespace dds
-
-namespace dds {
-  namespace rpc {
     namespace details {
 
 template <class Iface>
@@ -69,28 +33,6 @@ public:
   void run();
   void run(const dds::Duration_t &);
 };
-/*
-
-template <class ServiceImpl>
-ServiceHandle ServerImpl::register_service(
-  ServiceImpl &service_impl,
-  const std::string service_name)
-{
-  auto shptr =
-    boost::make_shared <
-      details::Dispatcher<typename ServiceImpl::InterfaceType >>
-        (service_impl);
-
-  shptr->get_service_impl()->set_service_params(
-    ServiceParams()
-      .domain_participant(this->participant_)
-      .service_name(service_name));
-  
-  dispatchers.push_back(shptr);
-
-  return ServiceHandle(boost::make_shared<ServiceHandleImpl>(0, this));
-}
-*/
 class ServiceParamsImpl
 {
 private:
@@ -149,7 +91,6 @@ public:
 
 
 } // namespace details
-
 } // namespace rpc
 } // namespace dds
 
@@ -186,6 +127,71 @@ public:
 
 };
 
+} // namespace details 
+
+
+  } // namespace rpc
+} // namespace dds
+
+namespace dds {
+  namespace rpc {
+
+    template <class Impl>
+    ServiceEndpoint::ServiceEndpoint(Impl impl)
+      : impl_(impl)
+    { }
+
+    template <class Impl>
+    ClientEndpoint::ClientEndpoint(Impl impl)
+      : ServiceProxy(impl)
+    { }
+
+    template <class TReq>
+    typename dds::dds_type_traits<TReq>::DataWriter 
+      ClientEndpoint::get_request_datawriter() const
+    {
+        auto client_endpoint_impl =
+          static_cast <details::ClientEndpointImpl *>(impl_.get());
+        
+        return client_endpoint_impl->get_request_datawriter<TReq>();
+    }
+
+    template <class TRep>
+    typename dds::dds_type_traits<TRep>::DataReader 
+      ClientEndpoint::get_reply_datareader() const
+    {
+        auto client_endpoint_impl =
+          static_cast <details::ClientEndpointImpl *>(impl_.get());
+
+        return client_endpoint_impl->get_request_datawriter<TRep>();
+    }
+
+  } // namespace rpc
+} // namespace dds
+
+/*
+
+template <class ServiceImpl>
+ServiceHandle ServerImpl::register_service(
+  ServiceImpl &service_impl,
+  const std::string service_name)
+{
+  auto shptr =
+    boost::make_shared <
+      details::Dispatcher<typename ServiceImpl::InterfaceType >>
+        (service_impl);
+
+  shptr->get_service_impl()->set_service_params(
+    ServiceParams()
+      .domain_participant(this->participant_)
+      .service_name(service_name));
+  
+  dispatchers.push_back(shptr);
+
+  return ServiceHandle(boost::make_shared<ServiceHandleImpl>(0, this));
+}
+*/
+
 /*
 template <class Iface>
 typename Iface::ProxyType
@@ -198,8 +204,3 @@ ClientImpl::resolve_service(const std::string & service_name)
                      .service_name(service_name)));
 }
 */
-} // namespace details 
-
-
-  } // namespace rpc
-} // namespace dds
