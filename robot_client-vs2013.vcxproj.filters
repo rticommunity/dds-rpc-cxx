@@ -87,6 +87,9 @@
     <ClInclude Include="request_reply.hpp">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="vendor_dependent.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="headers">

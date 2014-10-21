@@ -26,12 +26,10 @@ ServerImpl::ServerImpl()
     throw std::runtime_error("Unable to create participant");
 }
 
-ServerImpl::ServerImpl(DDS::DomainParticipant * part,
-                        DDS::Publisher * pub,
-                        DDS::Subscriber * sub)
-    : participant_(part),
-      publisher_(pub),
-      subscriber_(sub)
+ServerImpl::ServerImpl(const ServerParams & sp)
+    : participant_(sp.default_service_params().domain_participant()),
+      publisher_(sp.default_service_params().publisher()),
+      subscriber_(sp.default_service_params().subscriber())
 {}
    
 void ServerImpl::register_service(boost::shared_ptr<ServiceEndpointImpl> dispatcher)
@@ -39,20 +37,14 @@ void ServerImpl::register_service(boost::shared_ptr<ServiceEndpointImpl> dispatc
   dispatchers.push_back(dispatcher);
   printf("register service...\n");
 }
-/*
-void ServerImpl::unregister_service(int i)
-{
-  printf("unregister requested for %s. Ignoring...\n",
-    dispatchers[i]->get_service_impl()->get_service_params().service_name().c_str());
-}
-*/
+
 void ServerImpl::run()
 {
   if (!dispatchers.empty())
-    dispatchers[0]->run(DDS::Duration_t::from_millis(500));
+    dispatchers[0]->run(dds::Duration_t::from_millis(500));
 }
 
-void ServerImpl::run(const DDS::Duration_t & timeout)
+void ServerImpl::run(const dds::Duration_t & timeout)
 {
   if (!dispatchers.empty())
     dispatchers[0]->run(timeout);
@@ -60,7 +52,6 @@ void ServerImpl::run(const DDS::Duration_t & timeout)
 
 ServiceEndpointImpl::~ServiceEndpointImpl()
 {}
-
 
 } // namespace details
 
@@ -79,10 +70,8 @@ Server::Server()
 : impl_(boost::make_shared<details::ServerImpl>())
 {}
 
-Server::Server(DDS::DomainParticipant * part,
-               DDS::Publisher * pub,
-               DDS::Subscriber * sub)
-  : impl_(boost::make_shared<details::ServerImpl>(part, pub, sub))
+Server::Server(const ServerParams & server_params)
+  : impl_(boost::make_shared<details::ServerImpl>(server_params))
 {}
 
 void Server::run()
@@ -90,7 +79,7 @@ void Server::run()
   impl_->run();
 }
 
-void Server::run(const DDS::Duration_t & timeout)
+void Server::run(const dds::Duration_t & timeout)
 {
   impl_->run(timeout);
 }
@@ -100,19 +89,45 @@ boost::shared_ptr<details::ServerImpl> Server::get_impl() const
   return impl_;
 }
 
-const ServiceParams & ServiceImplBase::get_service_params() const
+ServerParams::ServerParams()
+: impl_(boost::make_shared<details::ServerParamsImpl>())
+{}
+
+ServerParams::ServerParams(const ServerParams & other)
+: impl_(boost::make_shared<details::ServerParamsImpl>(*other.impl_.get()))
+{}
+
+ServerParams & ServerParams::operator = (const ServerParams & that)
 {
-  return params;
+  impl_ = boost::make_shared<details::ServerParamsImpl>(*that.impl_.get());
+  return *this;
 }
 
-void ServiceImplBase::set_service_params(const ServiceParams & p)
+ServerParams & ServerParams::default_service_params(const ServiceParams & service_params)
 {
-  params = p;
+  impl_->default_service_params(service_params);
+  return *this;
+}
+
+ServiceParams ServerParams::default_service_params() const
+{
+  return impl_->default_service_params();
 }
 
 ServiceParams::ServiceParams()
 : impl_(boost::make_shared<details::ServiceParamsImpl>())
 {}
+
+
+ServiceParams::ServiceParams(const ServiceParams & other)
+: impl_(boost::make_shared<details::ServiceParamsImpl>(*other.impl_.get()))
+{}
+
+ServiceParams & ServiceParams::operator = (const ServiceParams & that)
+{
+  impl_ = boost::make_shared<details::ServiceParamsImpl>(*that.impl_.get());
+  return *this;
+}
 
 ServiceParams & ServiceParams::service_name(const std::string &service_name)
 {
@@ -126,31 +141,31 @@ ServiceParams & ServiceParams::instance_name(const std::string &instance_name)
   return *this;
 }
 
-ServiceParams & ServiceParams::datawriter_qos(const DDS::DataWriterQos &qos)
+ServiceParams & ServiceParams::datawriter_qos(const dds::DataWriterQos &qos)
 {
   impl_->datawriter_qos(qos);
   return *this;
 }
 
-ServiceParams & ServiceParams::datareader_qos(const DDS::DataReaderQos &qos)
+ServiceParams & ServiceParams::datareader_qos(const dds::DataReaderQos &qos)
 {
   impl_->datareader_qos(qos);
   return *this;
 }
 
-ServiceParams & ServiceParams::publisher(DDS::Publisher *publisher)
+ServiceParams & ServiceParams::publisher(dds::Publisher *publisher)
 {
   impl_->publisher(publisher);
   return *this;
 }
 
-ServiceParams & ServiceParams::subscriber(DDS::Subscriber *subscriber)
+ServiceParams & ServiceParams::subscriber(dds::Subscriber *subscriber)
 {
   impl_->subscriber(subscriber);
   return *this;
 }
 
-ServiceParams & ServiceParams::domain_participant(DDS::DomainParticipant *part)
+ServiceParams & ServiceParams::domain_participant(dds::DomainParticipant *part)
 {
   impl_->domain_participant(part);
   return *this;
@@ -176,27 +191,27 @@ std::string ServiceParams::reply_topic_name() const
   return impl_->reply_topic_name();
 }
 
-const DDS::DataWriterQos * ServiceParams::datawriter_qos() const
+const dds::DataWriterQos * ServiceParams::datawriter_qos() const
 {
   return impl_->datawriter_qos();
 }
 
-const DDS::DataReaderQos * ServiceParams::datareader_qos() const
+const dds::DataReaderQos * ServiceParams::datareader_qos() const
 {
   return impl_->datareader_qos();
 }
 
-DDS::Publisher * ServiceParams::publisher() const
+dds::Publisher * ServiceParams::publisher() const
 {
   return impl_->publisher();
 }
 
-DDS::Subscriber * ServiceParams::subscriber() const
+dds::Subscriber * ServiceParams::subscriber() const
 {
   return impl_->subscriber();
 }
 
-DDS::DomainParticipant * ServiceParams::domain_participant() const
+dds::DomainParticipant * ServiceParams::domain_participant() const
 {
   return impl_->domain_participant();
 }
@@ -204,6 +219,17 @@ DDS::DomainParticipant * ServiceParams::domain_participant() const
 ClientParams::ClientParams()
 : impl_(boost::make_shared<details::ClientParamsImpl>())
 { }
+
+
+ClientParams::ClientParams(const ClientParams & other)
+: impl_(boost::make_shared<details::ClientParamsImpl>(*other.impl_.get()))
+{}
+
+ClientParams & ClientParams::operator = (const ClientParams & that)
+{
+  impl_ = boost::make_shared<details::ClientParamsImpl>(*that.impl_.get());
+  return *this;
+}
 
 
 } // namespace rpc
@@ -217,6 +243,19 @@ namespace rpc {
 
     ClientParamsImpl::ClientParamsImpl()
     {}
+
+    ServerParamsImpl::ServerParamsImpl()
+    {}
+
+    void ServerParamsImpl::default_service_params(const ServiceParams & service_params)
+    {
+      service_params_ = service_params;
+    }
+
+    ServiceParams ServerParamsImpl::default_service_params() const
+    {
+      return service_params_;
+    }
 
     ServiceParamsImpl::ServiceParamsImpl()
       : participant_(0),
@@ -246,29 +285,29 @@ namespace rpc {
       reply_topic_name_ = rep_topic;
     }
 
-    void ServiceParamsImpl::datawriter_qos(const DDS::DataWriterQos &qos)
+    void ServiceParamsImpl::datawriter_qos(const dds::DataWriterQos &qos)
     {
       dwqos_ = qos;
       dwqos_def = true;
     }
 
-    void ServiceParamsImpl::datareader_qos(const DDS::DataReaderQos &qos)
+    void ServiceParamsImpl::datareader_qos(const dds::DataReaderQos &qos)
     {
       drqos_ = qos;
       drqos_def = true;
     }
 
-    void ServiceParamsImpl::publisher(DDS::Publisher *publisher)
+    void ServiceParamsImpl::publisher(dds::Publisher *publisher)
     {
       publisher_ = publisher;
     }
 
-    void ServiceParamsImpl::subscriber(DDS::Subscriber *subscriber)
+    void ServiceParamsImpl::subscriber(dds::Subscriber *subscriber)
     {
       subscriber_ = subscriber;
     }
 
-    void ServiceParamsImpl::domain_participant(DDS::DomainParticipant *part)
+    void ServiceParamsImpl::domain_participant(dds::DomainParticipant *part)
     {
       participant_ = part;
     }
@@ -293,7 +332,7 @@ namespace rpc {
       return reply_topic_name_;
     }
 
-    const DDS::DataWriterQos * ServiceParamsImpl::datawriter_qos() const
+    const dds::DataWriterQos * ServiceParamsImpl::datawriter_qos() const
     {
       if (dwqos_def)
         return &dwqos_;
@@ -301,7 +340,7 @@ namespace rpc {
         return 0;
     }
 
-    const DDS::DataReaderQos * ServiceParamsImpl::datareader_qos() const
+    const dds::DataReaderQos * ServiceParamsImpl::datareader_qos() const
     {
       if (drqos_def)
         return &drqos_;
@@ -309,17 +348,17 @@ namespace rpc {
         return 0;
     }
 
-    DDS::Publisher * ServiceParamsImpl::publisher() const
+    dds::Publisher * ServiceParamsImpl::publisher() const
     {
       return publisher_;
     }
 
-    DDS::Subscriber * ServiceParamsImpl::subscriber() const
+    dds::Subscriber * ServiceParamsImpl::subscriber() const
     {
       return subscriber_;
     }
 
-    DDS::DomainParticipant * ServiceParamsImpl::domain_participant() const
+    dds::DomainParticipant * ServiceParamsImpl::domain_participant() const
     {
       return participant_;
     }
@@ -339,9 +378,9 @@ namespace rpc {
         throw std::runtime_error("Unable to create participant");
     }
 
-    ClientImpl::ClientImpl(DDS::DomainParticipant * part,
-                           DDS::Publisher * pub,
-                           DDS::Subscriber * sub)
+    ClientImpl::ClientImpl(dds::DomainParticipant * part,
+                           dds::Publisher * pub,
+                           dds::Subscriber * sub)
                            : participant_(part),
                              publisher_(pub),
                              subscriber_(sub)

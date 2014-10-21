@@ -41,6 +41,16 @@ namespace dds { namespace rpc {
     : impl_(boost::make_shared<details::RequesterParamsImpl>())
   { }
 
+  RequesterParams::RequesterParams(const RequesterParams & other)
+    : impl_(boost::make_shared<details::RequesterParamsImpl>(*other.impl_.get()))
+  {}
+
+  RequesterParams & RequesterParams::operator = (const RequesterParams & that)
+  {
+    impl_ = boost::make_shared<details::RequesterParamsImpl>(*that.impl_.get());
+    return *this;
+  }
+
   RequesterParams & RequesterParams::domain_participant(DDSDomainParticipant * part)
   {
     impl_->domain_participant(part);
@@ -66,8 +76,18 @@ namespace dds { namespace rpc {
   ReplierParams::ReplierParams()
     : impl_(boost::make_shared<details::ReplierParamsImpl>())
   { }
+
+  ReplierParams::ReplierParams(const ReplierParams & other)
+    : impl_(boost::make_shared<details::ReplierParamsImpl>(*other.impl_.get()))
+  {}
+
+  ReplierParams & ReplierParams::operator = (const ReplierParams & that)
+  {
+    impl_ = boost::make_shared<details::ReplierParamsImpl>(*that.impl_.get());
+    return *this;
+  }
   
-  ReplierParams & ReplierParams::domain_participant(DDS::DomainParticipant * part)
+  ReplierParams & ReplierParams::domain_participant(dds::DomainParticipant * part)
   {
     impl_->domain_participant(part);
     return *this;
@@ -96,7 +116,7 @@ namespace dds { namespace rpc {
       : participant_(0)
     { }
 
-    void	RequesterParamsImpl::domain_participant(DDS::DomainParticipant *participant)
+    void	RequesterParamsImpl::domain_participant(dds::DomainParticipant *participant)
     {
       participant_ = participant;
     }
@@ -106,7 +126,7 @@ namespace dds { namespace rpc {
       service_name_ = service_name;
     }
 
-    DDS::DomainParticipant *	RequesterParamsImpl::domain_participant() const
+    dds::DomainParticipant *	RequesterParamsImpl::domain_participant() const
     {
       return participant_;
     }
@@ -120,7 +140,7 @@ namespace dds { namespace rpc {
       : participant_(0)
     { }
 
-    void	ReplierParamsImpl::domain_participant(DDS::DomainParticipant *participant)
+    void	ReplierParamsImpl::domain_participant(dds::DomainParticipant *participant)
     {
       participant_ = participant;
     }
@@ -130,7 +150,7 @@ namespace dds { namespace rpc {
       service_name_ = service_name;
     }
 
-    DDS::DomainParticipant *	ReplierParamsImpl::domain_participant() const
+    dds::DomainParticipant *	ReplierParamsImpl::domain_participant() const
     {
       return participant_;
     }

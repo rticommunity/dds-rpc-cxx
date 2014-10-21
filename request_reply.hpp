@@ -106,8 +106,6 @@ future<ResultType>::share()
   return std::move(*this);
 }
 
-#ifdef IMPLEMENTATION_DEPENDENT
-
 template<class ResultType>
 task<ResultType> future<ResultType>::to_task()
 {
@@ -123,8 +121,6 @@ template<class ResultType>
 future<ResultType>::future(task<ResultType> && task)
 : task_(std::move(task))
 {}
-
-#endif
 
 template<class ResultType>
 template<typename F>
@@ -394,18 +390,6 @@ class RequesterImpl : public details::ServiceProxyImpl,
       return old;
     }
 
-    bool receive_reply(Sample<TRep> & reply, const DDS::SampleIdentity_t & relatedRequestId)
-    {
-      if (super::wait_for_replies(
-            1,
-            DDS::Duration_t::from_seconds(20),
-            relatedRequestId))
-      {
-        return super::take_reply(reply, relatedRequestId);
-      }
-      else
-        return false;
-    }
 
     void send_request(TReq & req) 
     {
@@ -430,7 +414,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
       {
         if (super::wait_for_replies(
                     1,
-                    DDS::Duration_t::from_seconds(20)))
+                    dds::Duration_t::from_seconds(20)))
         {            
           bool ret = super::take_reply(reply, id2id_map[relatedRequestId]);
           if (suppress_invalid && !reply.info().valid_data)
@@ -456,7 +440,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
 
       if (sync->impl->wait_for_replies(
             1,
-            DDS::Duration_t::from_seconds(60)))
+            dds::Duration_t::from_seconds(60)))
       {
         Sample<TRep> reply;
         try {
@@ -593,7 +577,7 @@ class ReplierImpl : public connext::Replier<TReq, TRep>
       super::send_reply(reply, related_request_sample.identity());
     }
     
-    bool receive_request(Sample<TReq> & sample, const DDS::Duration_t & timeout)
+    bool receive_request(Sample<TReq> & sample, const dds::Duration_t & timeout)
     {
       bool ret = super::receive_request(sample, timeout);
       if (suppress_invalid && !sample.info().valid_data)
@@ -616,16 +600,16 @@ class ReplierImpl : public connext::Replier<TReq, TRep>
 
 class RequesterParamsImpl
 {
-  DDS::DomainParticipant * participant_;
+  dds::DomainParticipant * participant_;
   std::string service_name_;
 
 public:
   RequesterParamsImpl();
 
-  void domain_participant(DDS::DomainParticipant *participant);
+  void domain_participant(dds::DomainParticipant *participant);
   void service_name(const std::string & service_name);
 
-  DDS::DomainParticipant *	domain_participant() const;
+  dds::DomainParticipant *	domain_participant() const;
   std::string service_name() const;
 
 };
@@ -636,16 +620,16 @@ public:
 
 class ReplierParamsImpl
 {
-  DDS::DomainParticipant * participant_;
+  dds::DomainParticipant * participant_;
   std::string service_name_;
 
 public:
   ReplierParamsImpl();
 
-  void domain_participant(DDS::DomainParticipant *participant);
+  void domain_participant(dds::DomainParticipant *participant);
   void service_name(const std::string & service_name);
 
-  DDS::DomainParticipant *	domain_participant() const;
+  dds::DomainParticipant *	domain_participant() const;
   std::string service_name() const;
 
 };
@@ -712,16 +696,16 @@ void Requester<TReq, TRep>::send_request(WriteSampleRef<TReq> & wsref)
 }
 
 #endif // OMG_DDS_RPC_ENHANCED_PROFILE
-
+/*
 template <class TReq, class TRep>
 bool Requester<TReq, TRep>::receive_reply_connext(
   Sample<TRep> & reply, 
-  const DDS::SampleIdentity_t & relatedRequestId)
+  const dds::SampleIdentity_t & relatedRequestId)
 {
   auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
   return impl->receive_reply(reply, relatedRequestId);
 }
-
+*/
 template <typename TReq, typename TRep>
 bool Requester<TReq, TRep>::receive_nondata_samples(bool enable)
 {
@@ -758,11 +742,11 @@ Replier<TReq, TRep>::Replier(const ReplierParams& params)
 { }
 
 template <typename TReq, typename TRep>
-bool Replier<TReq, TRep>::receive_request(Sample<TReq> & sample, const DDS::Duration_t & timeout)
+bool Replier<TReq, TRep>::receive_request(Sample<TReq> & sample, const dds::Duration_t & timeout)
 {
   return impl_->receive_request(sample, timeout);
 }
-
+/*
 template <typename TReq, typename TRep>
 void Replier<TReq, TRep>::send_reply_connext(
         TRep & reply,
@@ -770,7 +754,7 @@ void Replier<TReq, TRep>::send_reply_connext(
 {
   impl_->send_reply_connext(reply, related_request_sample);
 }
-
+*/
 template <typename TReq, typename TRep>
 bool Replier<TReq, TRep>::receive_nondata_samples(bool enable)
 {

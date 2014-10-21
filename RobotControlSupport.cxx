@@ -195,7 +195,7 @@ namespace dds {
         return reply;
       }
 
-      void Dispatcher<robot::RobotControl>::dispatch(const DDS::Duration_t & timeout)
+      void Dispatcher<robot::RobotControl>::dispatch(const dds::Duration_t & timeout)
       {
         Sample<RequestType> request_sample;
         unique_data<ReplyType> reply;
@@ -216,13 +216,13 @@ namespace dds {
             reply->data._d = 0; // default
           }
 
-          replier_.send_reply_connext(*reply, request_sample);
+          //FIXME replier_.send_reply_connext(*reply, request_sample);
         }
         else
           printf("timeout or invalid sampleinfo. Ignoring...\n");
       }
 
-      void Dispatcher<robot::RobotControl>::run(const DDS::Duration_t & timeout)
+      void Dispatcher<robot::RobotControl>::run(const dds::Duration_t & timeout)
       {
         /*
         if (!replier_.get())
@@ -515,9 +515,9 @@ Client::Client()
 : impl_(boost::make_shared<details::ClientImpl>())
 {}
 
-Client::Client(DDS::DomainParticipant * part,
-  DDS::Publisher * pub,
-  DDS::Subscriber * sub)
+Client::Client(dds::DomainParticipant * part,
+  dds::Publisher * pub,
+  dds::Subscriber * sub)
   : impl_(boost::make_shared<details::ClientImpl>(part, pub, sub))
 {}
 

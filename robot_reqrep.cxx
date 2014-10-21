@@ -7,12 +7,13 @@
 #include "request_reply.h"
 #include "unique_data.h"
 
+using namespace dds;
 using namespace dds::rpc;
 using namespace robot;
 
 void client_rr(int domainid, const std::string & service_name)
 {
-  DDS::DomainParticipant * participant =
+  dds::DomainParticipant * participant =
     TheParticipantFactory->create_participant(
     domainid,
     DDS::PARTICIPANT_QOS_DEFAULT,
@@ -27,7 +28,7 @@ void client_rr(int domainid, const std::string & service_name)
   Requester<RobotControl_Request, RobotControl_Reply>
     requester(requester_params);
 
-  NDDSUtility::sleep(DDS::Duration_t::from_seconds(1));
+  NDDSUtility::sleep(dds::Duration_t::from_seconds(1));
 
   unique_data<RobotControl_Request> request;
   Sample<RobotControl_Reply> reply_sample;
@@ -170,7 +171,7 @@ void print_request(const RobotControl_Request & request)
 
 void server_rr(int domainid, const std::string & service_name)
 {
-  DDS::DomainParticipant * participant =
+  dds::DomainParticipant * participant =
     TheParticipantFactory->create_participant(
     domainid,
     DDS::PARTICIPANT_QOS_DEFAULT,
@@ -190,7 +191,7 @@ void server_rr(int domainid, const std::string & service_name)
     Sample<RobotControl_Request> request_sample;
 
     if (replier.receive_request(request_sample,
-                                DDS::Duration_t::from_seconds(60)))
+                                dds::Duration_t::from_seconds(60)))
     {
       print_request(request_sample.data());
 
@@ -199,7 +200,7 @@ void server_rr(int domainid, const std::string & service_name)
       reply->data._u.command._d = dds::rpc::SUCCESS_RETCODE;
       //reply->data._u.command._u.result.dummy = 0x0;
 
-      replier.send_reply_connext(*reply, request_sample);
+      // FIXME replier.send_reply_connext(*reply, request_sample);
     }
     else
       printf("timeout or invalid sampleinfo. Ignoring...\n");

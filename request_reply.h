@@ -1,161 +1,17 @@
 #ifndef OMG_DDS_RPC_REQUEST_REPLY_H
 #define OMG_DDS_RPC_REQUEST_REPLY_H
 
-#include <string>
+#include <string> // platform-specific
 
-#ifdef USE_BOOST_FUTURE
-#define BOOST_THREAD_PROVIDES_FUTURE
-#define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include "boost/thread/future.hpp"
-#endif
-
-#ifdef USE_PPLTASKS
-
-#include <ppltasks.h>
-
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include "boost/utility/result_of.hpp"
-
-#endif
-
-#include "sample.h"
-#include "rpc_types.h"
-
-#include "boost/shared_ptr.hpp"
-#include "ndds/ndds_namespace_cpp.h"
+#include "vendor_dependent.h"
+#include "sample.h"   // standard
 
 namespace dds {
 
-  typedef DDS::Duration_t Duration_t;
-
-  namespace rpc {
-
-#ifdef IMPLEMENTATION_DEPENDENT
-    namespace details {
-      template <class, class>
-      class RequesterImpl;
-
-      class RequesterParamsImpl;
-      class ReplierParamsImpl;
-
-      template <class, class>
-      class ReplierImpl;
-      
-      template <class T>
-      struct Unwrapper;
-      
-      class ServiceProxyImpl;
-
-      template <class Iface>
-      class ClientImpl;
-    
-    } // namespace details
-#endif
-
-class ReplierParams;
-class RequesterParams;
-
-#ifdef USE_BOOST_FUTURE
-
-using boost::future;
-
-#endif 
-
-#ifdef USE_PPLTASKS
-
-#ifdef IMPLEMENTATION_DEPENDENT
-using concurrency::task;
-#endif
-
-template <class R>
-class future;
-
-template <class ResultType>
-class shared_future
-{
-#ifdef IMPLEMENTATION_DEPENDENT
-  boost::shared_ptr<future<ResultType>> shfut_;
-#endif 
-
-public:
-
-  explicit shared_future(future<ResultType> && fut);
-
-  explicit shared_future(future<ResultType> & fut);
-};
-
-template <class ResultType>
-class future
-{
-#ifdef IMPLEMENTATION_DEPENDENT
-  task<ResultType> task_;
-#endif
-
-public:
-
-  typedef ResultType value_type;
-  
-  future();
-  future(future && other);
-  future& operator=(future && other);
-
-  future(const future & rhs) = delete;
-  future& operator=(const future & rhs) = delete;
-  
-#ifdef IMPLEMENTATION_DEPENDENT
-
-  task<ResultType> to_task();
-  future(const task<ResultType> & task);
-  future(task<ResultType> && task);
-
-#endif
-
-  template<typename F>
-  typename details::Unwrapper<typename boost::result_of<F(future &&)>::type>::return_type
-    then(F&& func);
-
-  template<typename F>
-  typename details::Unwrapper<typename boost::result_of<F(future &&)>::type>::return_type
-    then(const F & func);
-
-
-  shared_future<ResultType> share();
-  void swap(future& other);
-  ResultType get();
-  bool has_exception() const;
-  bool has_value() const;
-  bool is_ready() const; 
-  
-  void wait() const;
-
-  template <class Duration>
-  void wait(const Duration &);
-};
-
-
-#endif // USE_PPLTASKS
-
-using boost::shared_ptr;
-
-template <class T>
-struct rpc_type_traits 
-#ifdef IMPLEMENTATION_DEPENDENT
-  : public connext::dds_type_traits<T>
-#endif
-{
-  // typedef DataWriter        for T
-  // typedef DataReader        for T
-  // typedef LoanedSamplesType for T.
-};
+namespace rpc {
 
 class ServiceProxy
 {
-protected:
-#ifdef IMPLEMENTATION_DEPENDENT
-  boost::shared_ptr<details::ServiceProxyImpl> impl_;
-#endif
-
 public:
 
   template <class Impl>
@@ -187,6 +43,13 @@ public:
   future<void> wait_for_services_async(const std::vector<std::string> & instanceNames);
 
   void close();
+
+protected:
+  typedef details::vendor_dependent<ServiceProxy>::type VendorDependent;
+  VendorDependent impl_;
+
+public:
+  VendorDependent get_impl() const;
 };
 
 
@@ -199,11 +62,11 @@ public:
 
     typedef TRep ReplyType;
 
-    typedef typename rpc_type_traits<TReq>::DataWriter RequestDataWriter;
+    typedef typename dds_type_traits<TReq>::DataWriter RequestDataWriter;
 
-    typedef typename rpc_type_traits<TRep>::DataReader ReplyDataReader;
+    typedef typename dds_type_traits<TRep>::DataReader ReplyDataReader;
 
-    typedef typename rpc_type_traits<TRep>::LoanedSamplesType LoanedSamplesType;
+    typedef typename dds_type_traits<TRep>::LoanedSamplesType LoanedSamplesType;
 
     typedef RequesterParams Params;
 
@@ -222,18 +85,16 @@ public:
 #ifdef OMG_DDS_RPC_BASIC_PROFILE
     void send_request(TReq & request);
     void send_request_oneway(TReq &);
-    future<Sample<TRep>> send_request_async(TReq &);
-#endif 
-
-#ifdef OMG_DDS_RPC_ENHANCED_PROFILE
-    void send_request(const TReq & request);
-    void send_request_oneway(const TReq &);
-    future<Sample<TRep>> send_request_async(const TReq &);
+    future<dds::Sample<TRep>> send_request_async(TReq &);
 #endif 
 
 #ifdef OMG_DDS_RPC_ENHANCED_PROFILE
     void send_request(WriteSample<TReq> &request)
     void send_request(WriteSampleRef<TReq> & wsref);
+    void send_request(const TReq & request);
+    void send_request_oneway(const TReq &);
+
+    future<Sample<TRep>> send_request_async(const TReq &);
 #endif
 
     bool receive_reply(
@@ -319,23 +180,12 @@ public:
 
     ReplyDataReader get_reply_datareader() const;
 
-#ifdef IMPLEMENTATION_DEPENDENT
-public:
-    typedef typename dds_type_traits<TReq>::TypeSupport RequestTypeSupport;
-    typedef typename dds_type_traits<TRep>::TypeSupport ReplyTypeSupport;
-    typedef shared_ptr<details::RequesterImpl<TReq, TRep>> ImplDependent;
-
-    bool receive_reply_connext(
-      Sample<TRep> & reply,
-      const DDS::SampleIdentity_t & relatedRequestId);
-
 private:
-  shared_ptr<details::RequesterImpl<TReq, TRep>> impl_;
+    typedef typename details::vendor_dependent<Requester<TReq, TRep>>::type VendorDependent;
+    VendorDependent impl_;
 
-#endif // IMPLEMENTATION_DEPENDENT
-
-  ImplDependent get_impl();
-
+public:
+    VendorDependent get_impl();
 };
 
 template <typename TReq, typename TRep>
@@ -347,11 +197,11 @@ class Replier
 
     typedef TRep ReplyType;
 
-    typedef typename rpc_type_traits<TRep>::DataWriter ReplyDataWriter;
+    typedef typename dds_type_traits<TRep>::DataWriter ReplyDataWriter;
 
-    typedef typename rpc_type_traits<TReq>::DataReader RequestDataReader;
+    typedef typename dds_type_traits<TReq>::DataReader RequestDataReader;
 
-    typedef typename rpc_type_traits<TReq>::LoanedSamplesType LoanedSamplesType;
+    typedef typename dds_type_traits<TReq>::LoanedSamplesType LoanedSamplesType;
 
     typedef ReplierParams Params;
 
@@ -373,26 +223,26 @@ class Replier
 
     bool receive_request(
         Sample<TReq> & request,
-        const DDS::Duration_t & max_wait);
+        const dds::Duration_t & max_wait);
 
     bool receive_request(
         SampleRef<TReq> request,
-        const DDS::Duration_t & max_wait);
+        const dds::Duration_t & max_wait);
 
     LoanedSamplesType receive_requests(
-        const DDS::Duration_t & max_wait);
+        const dds::Duration_t & max_wait);
 
     LoanedSamplesType receive_requests(
         int min_request_count,
         int max_request_count,
-        const DDS::Duration_t& max_wait);
+        const dds::Duration_t& max_wait);
 
     bool wait_for_requests(
-        const DDS::Duration_t & max_wait);
+        const dds::Duration_t & max_wait);
 
     bool wait_for_requests(
         int min_count, 
-        const DDS::Duration_t & max_wait);
+        const dds::Duration_t & max_wait);
 
     bool take_request(Sample<TReq> & request);
 
@@ -416,23 +266,12 @@ class Replier
 
     void close();
 
-#ifdef IMPLEMENTATION_DEPENDENT
-public:
-  typedef typename dds_type_traits<TReq>::TypeSupport RequestTypeSupport;
-  typedef typename dds_type_traits<TRep>::TypeSupport ReplyTypeSupport;
-  typedef shared_ptr<details::ReplierImpl<TReq, TRep>> ImplDependent;
-
-  void send_reply_connext(
-    TRep & reply,
-    const Sample<TReq> & related_request_sample);
-
 private:
-  shared_ptr<details::ReplierImpl<TReq, TRep>> impl_;
+  typedef typename details::vendor_dependent<Replier<TReq, TRep>>::type VendorDependent;
+  VendorDependent impl_;
 
-#endif // IMPLEMENTATION_DEPENDENT
-
-  ImplDependent get_impl();
-
+public:
+  VendorDependent get_impl();
 };
 
 template <class TReq, class TRep>
@@ -485,7 +324,9 @@ class RequesterParams
 {
 public:
     RequesterParams ();
-   
+    RequesterParams(const RequesterParams & other);
+    RequesterParams & operator = (const RequesterParams & that);
+
     template <class TRep>
     RequesterParams & 	simple_requester_listener(
         SimpleRequesterListener<TRep> *listener);
@@ -494,36 +335,41 @@ public:
     RequesterParams & 	requester_listener(
         RequesterListener<TReq, TRep> *listener);
 
-    RequesterParams & 	domain_participant(DDS::DomainParticipant *participant);
+    RequesterParams & 	domain_participant(dds::DomainParticipant * participant);
+    RequesterParams & 	publisher(dds::Publisher * publisher);
+    RequesterParams & 	subscriber(dds::Subscriber * subscriber);
+    RequesterParams & 	datawriter_qos(const dds::DataWriterQos & qos);
+    RequesterParams & 	datareader_qos(const dds::DataReaderQos & qos);
     RequesterParams & 	service_name (const std::string &name);
     RequesterParams & 	request_topic_name (const std::string &name);
     RequesterParams & 	reply_topic_name (const std::string &name);
-    RequesterParams & 	datawriter_qos (const DDS::DataWriterQos &qos);
-    RequesterParams & 	datareader_qos (const DDS::DataReaderQos &qos);
-    RequesterParams & 	publisher (DDS::Publisher *publisher);
-    RequesterParams & 	subscriber (DDS::Subscriber *subscriber);
 
-    DDS::DomainParticipant * domain_participant() const;
+    dds::DomainParticipant * domain_participant() const;
+    dds::Publisher * publisher() const;
+    dds::Subscriber * subscriber() const;
+    const dds::DataWriterQos & datawriter_qos() const;
+    const dds::DataReaderQos & datareader_qos() const;
     ListenerBase * simple_requester_listener() const;
     ListenerBase * requester_listener() const;
     std::string service_name() const;
     std::string request_topic_name() const;
     std::string reply_topic_name() const;
-    const DDS::DataWriterQos * datawriter_qos() const;
-    const DDS::DataReaderQos * datareader_qos() const;
-    DDS::Publisher * publisher() const;
-    DDS::Subscriber * subscriber() const;
 
-#ifdef IMPLEMENTATION_DEPENDENT
-    boost::shared_ptr<details::RequesterParamsImpl> impl_;
-#endif // IMPLEMENTATION_DEPENDENT
-};     
+private:
+    typedef details::vendor_dependent<RequesterParams>::type VendorDependent;
+    VendorDependent impl_;
+
+public:
+    VendorDependent get_impl();
+};
 
 
 class ReplierParams 
 {
 public:
     ReplierParams ();
+    ReplierParams(const ReplierParams & other);
+    ReplierParams & operator = (const ReplierParams & that);
 
     template <class TReq, class TRep>
     ReplierParams & simple_replier_listener (
@@ -533,38 +379,41 @@ public:
     ReplierParams & replier_listener (
         ReplierListener<TReq, TRep> *listener);
     
-    ReplierParams & domain_participant(DDS::DomainParticipant *participant);
+    ReplierParams & domain_participant(dds::DomainParticipant *participant);
     ReplierParams & service_name (const std::string &service_name);
     ReplierParams & instance_name (const std::string &service_name);
     ReplierParams & request_topic_name (const std::string &req_topic);
     ReplierParams & reply_topic_name (const std::string &rep_topic);
-    ReplierParams & datawriter_qos (const DDS::DataWriterQos &qos);
-    ReplierParams & datareader_qos (const DDS::DataReaderQos &qos);
-    ReplierParams & publisher (DDS::Publisher *publisher);
-    ReplierParams & subscriber (DDS::Subscriber *subscriber);
+    ReplierParams & datawriter_qos (const dds::DataWriterQos &qos);
+    ReplierParams & datareader_qos (const dds::DataReaderQos &qos);
+    ReplierParams & publisher (dds::Publisher *publisher);
+    ReplierParams & subscriber (dds::Subscriber *subscriber);
 
-    DDS::DomainParticipant * domain_participant() const;
+    dds::DomainParticipant * domain_participant() const;
     ListenerBase * simple_replier_listener() const;
     ListenerBase * replier_listener() const;
     std::string service_name() const;
     std::string instance_name() const;
     std::string request_topic_name() const;
     std::string reply_topic_name() const;
-    const DDS::DataWriterQos * datawriter_qos() const;
-    const DDS::DataReaderQos * datareader_qos() const;
-    DDS::Publisher * publisher() const;
-    DDS::Subscriber * subscriber() const;
+    const dds::DataWriterQos * datawriter_qos() const;
+    const dds::DataReaderQos * datareader_qos() const;
+    dds::Publisher * publisher() const;
+    dds::Subscriber * subscriber() const;
 
-#ifdef IMPLEMENTATION_DEPENDENT
-    boost::shared_ptr<details::ReplierParamsImpl> impl_;
-#endif // IMPLEMENTATION_DEPENDENT
+private:
+  typedef details::vendor_dependent<ReplierParams>::type VendorDependent;
+  VendorDependent impl_;
+
+public:
+  VendorDependent get_impl();
 };
 
 } // namespace rpc
 
 } // namespace dds 
 
-#include "request_reply.hpp"
+#include "request_reply.hpp" // vendor dependent
 
 #endif // OMG_DDS_RPC_REQUEST_REPLY_H
 

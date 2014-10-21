@@ -28,7 +28,7 @@ class ServiceEndpointImpl
 {
 public:
 
-  virtual void run(const DDS::Duration_t &) = 0;
+  virtual void run(const dds::Duration_t &) = 0;
   virtual ~ServiceEndpointImpl();
 };
 
@@ -37,20 +37,18 @@ class ServerImpl
 public:
 
   std::vector<boost::shared_ptr<ServiceEndpointImpl>> dispatchers;
-  DDS::DomainParticipant * participant_;
-  DDS::Publisher * publisher_;
-  DDS::Subscriber * subscriber_;
+  dds::DomainParticipant * participant_;
+  dds::Publisher * publisher_;
+  dds::Subscriber * subscriber_;
 
 public:
   ServerImpl();
 
-  ServerImpl(DDS::DomainParticipant * part,
-             DDS::Publisher * pub,
-             DDS::Subscriber * sub);
+  ServerImpl(const ServerParams & server_params);
 
   void register_service(boost::shared_ptr<ServiceEndpointImpl> dispatcher);
   void run();
-  void run(const DDS::Duration_t &);
+  void run(const dds::Duration_t &);
 };
 /*
 
@@ -77,11 +75,11 @@ ServiceHandle ServerImpl::register_service(
 class ServiceParamsImpl
 {
 private:
-  DDS::DomainParticipant * participant_;
-  DDS::Publisher * publisher_;
-  DDS::Subscriber * subscriber_;
-  DDS::DataWriterQos dwqos_; bool dwqos_def;
-  DDS::DataReaderQos drqos_; bool drqos_def;
+  dds::DomainParticipant * participant_;
+  dds::Publisher * publisher_;
+  dds::Subscriber * subscriber_;
+  dds::DataWriterQos dwqos_; bool dwqos_def;
+  dds::DataReaderQos drqos_; bool drqos_def;
 
   std::string service_name_;
   std::string instance_name_;
@@ -95,21 +93,21 @@ public:
   void instance_name(const std::string &instance_name);
   void request_topic_name(const std::string &req_topic);
   void reply_topic_name(const std::string &rep_topic);
-  void datawriter_qos(const DDS::DataWriterQos &qos);
-  void datareader_qos(const DDS::DataReaderQos &qos);
-  void publisher(DDS::Publisher *publisher);
-  void subscriber(DDS::Subscriber *subscriber);
-  void domain_participant(DDS::DomainParticipant *part);
+  void datawriter_qos(const dds::DataWriterQos &qos);
+  void datareader_qos(const dds::DataReaderQos &qos);
+  void publisher(dds::Publisher *publisher);
+  void subscriber(dds::Subscriber *subscriber);
+  void domain_participant(dds::DomainParticipant *part);
 
   std::string service_name() const;
   std::string instance_name() const;
   std::string request_topic_name() const;
   std::string reply_topic_name() const;
-  const DDS::DataWriterQos * datawriter_qos() const;
-  const DDS::DataReaderQos * datareader_qos() const;
-  DDS::Publisher * publisher() const;
-  DDS::Subscriber * subscriber() const;
-  DDS::DomainParticipant * domain_participant() const;
+  const dds::DataWriterQos * datawriter_qos() const;
+  const dds::DataReaderQos * datareader_qos() const;
+  dds::Publisher * publisher() const;
+  dds::Subscriber * subscriber() const;
+  dds::DomainParticipant * domain_participant() const;
 };
 
 class ClientParamsImpl : public ServiceParamsImpl
@@ -117,6 +115,19 @@ class ClientParamsImpl : public ServiceParamsImpl
 public:
   ClientParamsImpl();
 };
+
+class ServerParamsImpl
+{
+  dds::rpc::ServiceParams service_params_;
+
+public:
+  ServerParamsImpl();
+
+  void default_service_params(const ServiceParams & service_params);
+
+  ServiceParams default_service_params() const;
+};
+
 
 } // namespace details
 
@@ -133,10 +144,10 @@ class ClientEndpointImpl : public ServiceProxyImpl
 {
 public:
   template <class TReq>
-  typename rpc_type_traits<TReq>::DataWriter get_request_datawriter() const;
+  typename dds_type_traits<TReq>::DataWriter get_request_datawriter() const;
 
   template <class TRep>
-  typename rpc_type_traits<TRep>::DataReader get_reply_datareader() const;
+  typename dds_type_traits<TRep>::DataReader get_reply_datareader() const;
 
   virtual dds::rpc::ClientParams get_client_params() const = 0;
 

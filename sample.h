@@ -5,96 +5,71 @@
 #include <stdexcept>
 #include <memory>
 
-#include "ndds/ndds_namespace_cpp.h"
+#ifdef OMG_DDS_RPC_REFERENCE_IMPLEMENTATION
 
-#include "rpc_types.h"
-
-#ifdef USE_RTI_CONNEXT
-
-#include "connext_cpp/connext_cpp_infrastructure.h"
-
-namespace dds { namespace rpc {
-
-#ifdef IMPLEMENTATION_DEPENDENT
-
-using connext::Sample;
-using connext::SampleRef;
-using connext::SampleInfo;
-using connext::WriteSample; 
-using connext::WriteSampleRef;
-using connext::LoanedSamples;
-using connext::SampleIterator;
-using connext::dds_type_traits;
-
-#endif // IMPLEMENTATION_DEPENDENT
-
-template <class T>
-class SharedSamples;
-
-} // namespace rpc
-} // namespace dds
+#include "vendor_dependent.h"
 
 #else 
 
-namespace dds { namespace rpc {
+namespace dds { 
 
+namespace details {
 
-typedef DDS_SampleInfo SampleInfo;
-typedef DDS_SampleInfoSeq SampleInfoSeq; 
+  template <bool, typename T, typename U>
+  struct if_ {
+    typedef T type;
+  };
+
+  template <typename T, typename U>
+  struct if_ <false, T, U> {
+    typedef U type;
+  };
+
+} // namespace details
 
 template<typename T, bool> class SampleIterator;
 template<typename T>       class Sample;
 template<typename T>       class SampleRef;
+template<typename T>       class WriteSample;
+template<typename T>       class WriteSampleRef;
 template<class T>          class LoanedSamples;
+template<class T>          class SharedSamples;
 
 template <typename T> 
 struct dds_type_traits
 {
-    typedef typename T::Seq          Seq;
-    typedef const typename T::Seq    ConstSeq;
-    typedef SampleRef<T>             SampleRefType;
-    typedef SampleRef<T>             SampleIteratorValueType;
-    typedef SampleRef<const T>       ConstSampleIteratorValueType;
-    typedef SampleIterator<T, false> iterator;
-    typedef SampleIterator<T, true>  const_iterator;
-    typedef typename T::TypeSupport  TypeSupport;
-    typedef typename T::DataReader   DataReader;
-    typedef typename T::DataWriter   DataWriter;
-    typedef LoanedSamples<T>         LoanedSamplesType;
+    typedef typename T::Seq               Seq;
+    typedef const typename T::Seq         ConstSeq;
+    typedef typename T::TypeSupport       TypeSupport;
+    typedef typename T::DataReader        DataReader;
+    typedef typename T::DataWriter        DataWriter;
+
+    typedef dds::SampleRef<T>             SampleRefType;
+    typedef dds::SampleRef<T>             SampleIteratorValueType;
+    typedef dds::SampleRef<const T>       ConstSampleIteratorValueType;
+    typedef dds::LoanedSamples<T>         LoanedSamplesType;
+    typedef dds::SampleIterator<T, false> iterator;
+    typedef dds::SampleIterator<T, true>  const_iterator;
 };
 
 template <> 
-struct dds_type_traits<SampleInfo> 
+struct dds_type_traits<dds::SampleInfo> 
 {
-    typedef SampleInfoSeq       Seq; 
-    typedef const SampleInfoSeq ConstSeq;
+    typedef dds::SampleInfoSeq            Seq; 
+    typedef const dds::SampleInfoSeq      ConstSeq;
 };
-
-namespace details {
-
-template <bool, typename T, typename U>
-struct if_ {
-    typedef T type;
-};
-
-template <typename T, typename U>
-struct if_ <false, T, U> {
-    typedef U type;
-};
-
-} // namespace details
 
 template <typename T>
 class Sample 
 {
 public:
-    typedef T                                        Data;
-    typedef T&                                       DataReference;
-    typedef const T&                                 ConstDataReference;
-    typedef typename dds_type_traits<T>::Seq         Seq;
-    typedef typename dds_type_traits<T>::TypeSupport TypeSupport;
-    typedef typename dds_type_traits<T>::DataReader  DataReader;
-    typedef typename dds_type_traits<T>::DataWriter  DataWriter;
+    typedef T                                             Data;
+    typedef T&                                            DataReference;
+    typedef const T&                                      ConstDataReference;
+    typedef typename dds::dds_type_traits<T>::Seq         Seq;
+    typedef typename dds::dds_type_traits<T>::TypeSupport TypeSupport;
+    typedef typename dds::dds_type_traits<T>::DataReader  DataReader;
+    typedef typename dds::dds_type_traits<T>::DataWriter  DataWriter;
 
     Sample();
     
@@ -114,11 +89,11 @@ public:
 
     T& data();
 
-    SampleInfo& info();
+    dds::SampleInfo& info();
 
     const T& data() const;
 
-    const SampleInfo& info() const;
+    const dds::SampleInfo& info() const;
 
     operator DataReference ();
 
@@ -128,9 +103,9 @@ public:
 
     void set_data(const T *t);
 
-    void set_info(const SampleInfo &i);
+    void set_info(const dds::SampleInfo &i);
 
-    void set_info(const SampleInfo *i);
+    void set_info(const dds::SampleInfo *i);
 };
 
 template <typename T>
@@ -139,9 +114,9 @@ class SampleRef
 public:
     SampleRef();
 
-    SampleRef(T * data, SampleInfo * info);
+    SampleRef(T * data, dds::SampleInfo * info);
 
-    SampleRef(T & data, SampleInfo & info);
+    SampleRef(T & data, dds::SampleInfo & info);
 
     SampleRef(Sample<T> & sample);
 
@@ -197,16 +172,16 @@ public:
    typedef typename details::if_<
        IsConst, 
        typename dds_type_traits<T>::ConstSeq, 
-       typename dds_type_traits<T>::Seq>::type TSeq;
+       typename dds_type_traits<T>::Seq>::type Seq;
 
    typedef typename details::if_<
        IsConst, 
-       typename dds_type_traits<SampleInfo>::ConstSeq, 
-       typename dds_type_traits<SampleInfo>::Seq>::type InfoSeq;
+       typename dds_type_traits<dds::SampleInfo>::ConstSeq, 
+       typename dds_type_traits<dds::SampleInfo>::Seq>::type InfoSeq;
 
    SampleIterator();
 
-   explicit SampleIterator(TSeq & seq, 
+   explicit SampleIterator(Seq & seq, 
                            InfoSeq & info_seq, 
                            int position = 0);
 
@@ -263,35 +238,34 @@ template <typename T>
 class LoanedSamples
 {
 public:
-   typedef typename dds_type_traits<T>::Seq                             TSeq;
-   typedef typename dds_type_traits<T>::DataReader                      TDataReader;
+   typedef typename dds_type_traits<T>::Seq                             Seq;
+   typedef typename dds_type_traits<T>::DataReader                      DataReader;
 
    typedef SampleIterator<T, false>                                     iterator;
-
    typedef SampleIterator<T, true>                                      const_iterator;
 
    typedef typename dds_type_traits<T>::SampleIteratorValueType         value_type;
    typedef typename dds_type_traits<T>::ConstSampleIteratorValueType    const_value_type;
    typedef std::ptrdiff_t                                               difference_type;
 
-  struct LoanProxy 
-  {
-    void * data;
-  };
+   struct LoanProxy 
+   {
+     void * data;
+   };
 
 public:
 
     LoanedSamples();
     
-    static LoanedSamples move_construct_from_loans(
-        TDataReader * reader, 
-        TSeq & data_seq, 
-        SampleInfoSeq & info_seq);
+    static LoanedSamples<T> move_construct_from_loans(
+        DataReader * reader, 
+        Seq & data_seq, 
+        dds::SampleInfoSeq & info_seq);
 
     void release(
-        TDataReader *& reader_ptr, 
-        TSeq & data_seq, 
-        SampleInfoSeq & info_seq); 
+        DataReader *& reader_ptr, 
+        Seq & data_seq, 
+        dds::SampleInfoSeq & info_seq); 
 
 #ifdef OMG_DDS_RPC_HASCPP11    
 
@@ -313,13 +287,13 @@ public:
 
     ~LoanedSamples() throw();
 
-    TSeq & data_seq(); 
+    Seq & data_seq(); 
 
-    SampleInfoSeq & info_seq(); 
+    dds::SampleInfoSeq & info_seq(); 
 
-    const TSeq & data_seq() const;
+    const Seq & data_seq() const;
 
-    const SampleInfoSeq & info_seq() const;
+    const dds::SampleInfoSeq & info_seq() const;
 
     value_type operator [] (size_t index);
 
@@ -327,7 +301,7 @@ public:
 
     int length() const;
 
-    void set_datareader(TDataReader * reader);
+    void set_datareader(DataReader * reader);
 
     void return_loan();
 
@@ -446,10 +420,9 @@ void swap(LoanedSamples<T> &ls1, LoanedSamples<T> &ls2) throw()
     ls1.swap(ls2);
 }
 
-} // namespace rpc
-} // namespace DDS 
+} // namespace dds 
 
-#endif // USE_RTI_CONNEXT
+#endif // OMG_DDS_RPC_REFERENCE_IMPLEMENTATION
 
 
 #endif // OMG_DDS_RPC_INFRASTRUCTURE_H

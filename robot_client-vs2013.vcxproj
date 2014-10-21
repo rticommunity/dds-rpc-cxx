@@ -88,7 +88,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>OMG_DDS_RPC_BASIC_PROFILE;IMPLEMENTATION_DEPENDENT;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -167,7 +167,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>IMPLEMENTATION_DEPENDENT;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;WIN32;RTI_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;WIN32;RTI_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -298,6 +298,7 @@
     <ClInclude Include="rpc_typesSupport.h" />
     <ClInclude Include="sample.h" />
     <ClInclude Include="unique_data.h" />
+    <ClInclude Include="vendor_dependent.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

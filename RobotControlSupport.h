@@ -117,7 +117,7 @@ namespace dds {
         ServiceParams service_params_;
         Replier replier_;
         
-        void dispatch(const DDS::Duration_t &);
+        void dispatch(const dds::Duration_t &);
 
       public:
 
@@ -125,7 +125,7 @@ namespace dds {
         Dispatcher(robot::RobotControl & service_impl, 
                    const ServiceParams & params);
 
-        virtual void run(const DDS::Duration_t &) override;
+        virtual void run(const dds::Duration_t &) override;
 
       };
 
