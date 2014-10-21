@@ -86,9 +86,6 @@ namespace dds {
     class Replier;
 
     template <class R>
-    class future;
-
-    template <class R>
     class shared_future;
 
     namespace details {
