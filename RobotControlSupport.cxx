@@ -346,6 +346,16 @@ namespace dds {
           return future<void>();
       }
 
+      DDS::DataWriter * ClientImpl<robot::RobotControl>::get_request_datawriter() const
+      {
+        return requester_.get_request_datawriter();
+      }
+
+      DDS::DataReader * ClientImpl<robot::RobotControl>::get_reply_datareader() const
+      {
+        return requester_.get_reply_datareader();
+      }
+
       ClientParams ClientImpl<robot::RobotControl>::get_client_params() const
       {
         return params_;

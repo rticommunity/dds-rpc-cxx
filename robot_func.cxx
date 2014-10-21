@@ -121,6 +121,11 @@ void client_func(int domainid, const std::string & service_name)
         speed = 1;
       }
     }
+
+    dds::rpc::ClientEndpoint client_endpoint = robot_client;
+    auto dw = 
+      client_endpoint.get_request_datawriter<robot::RobotControl::RequestType>();
+
   }
   catch (std::exception & ex)
   {

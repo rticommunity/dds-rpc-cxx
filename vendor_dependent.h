@@ -63,7 +63,20 @@ namespace dds {
   using connext::WriteSampleRef;
   using connext::LoanedSamples;
   using connext::SampleIterator;
-  using connext::dds_type_traits;
+
+  template <typename T>
+  struct dds_type_traits 
+  {
+    typedef typename T::DataReader*  DataReader;
+    typedef typename T::DataWriter*  DataWriter;
+
+    typedef SampleRef<T>             SampleRefType;
+    typedef SampleRef<T>             SampleIteratorValueType;
+    typedef SampleRef<const T>       ConstSampleIteratorValueType;
+    typedef LoanedSamples<T>         LoanedSamplesType;
+    typedef SampleIterator<T, false> iterator;
+    typedef SampleIterator<T, true>  const_iterator;
+  };
 
   template <class T>
   class SharedSamples;

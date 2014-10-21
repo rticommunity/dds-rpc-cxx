@@ -38,9 +38,6 @@ template<class T>          class SharedSamples;
 template <typename T> 
 struct dds_type_traits
 {
-    typedef typename T::Seq               Seq;
-    typedef const typename T::Seq         ConstSeq;
-    typedef typename T::TypeSupport       TypeSupport;
     typedef typename T::DataReader        DataReader;
     typedef typename T::DataWriter        DataWriter;
 

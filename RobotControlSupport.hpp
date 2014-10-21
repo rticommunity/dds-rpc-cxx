@@ -71,6 +71,9 @@ namespace dds {
 
         void close() override;
 
+        /* Methods from ClientEndpointImpl */
+        DDS::DataWriter * get_request_datawriter() const;
+        DDS::DataReader * get_reply_datareader() const;
         dds::rpc::ClientParams get_client_params() const override;
 
         /* methods from RobotControl */

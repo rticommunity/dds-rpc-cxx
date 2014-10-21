@@ -62,11 +62,11 @@ public:
 
     typedef TRep ReplyType;
 
-    typedef typename dds_type_traits<TReq>::DataWriter RequestDataWriter;
+    typedef typename dds::dds_type_traits<TReq>::DataWriter RequestDataWriter;
 
-    typedef typename dds_type_traits<TRep>::DataReader ReplyDataReader;
+    typedef typename dds::dds_type_traits<TRep>::DataReader ReplyDataReader;
 
-    typedef typename dds_type_traits<TRep>::LoanedSamplesType LoanedSamplesType;
+    typedef typename dds::dds_type_traits<TRep>::LoanedSamplesType LoanedSamplesType;
 
     typedef RequesterParams Params;
 
@@ -197,11 +197,11 @@ class Replier
 
     typedef TRep ReplyType;
 
-    typedef typename dds_type_traits<TRep>::DataWriter ReplyDataWriter;
+    typedef typename dds::dds_type_traits<TRep>::DataWriter ReplyDataWriter;
 
-    typedef typename dds_type_traits<TReq>::DataReader RequestDataReader;
+    typedef typename dds::dds_type_traits<TReq>::DataReader RequestDataReader;
 
-    typedef typename dds_type_traits<TReq>::LoanedSamplesType LoanedSamplesType;
+    typedef typename dds::dds_type_traits<TReq>::LoanedSamplesType LoanedSamplesType;
 
     typedef ReplierParams Params;
 

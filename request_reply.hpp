@@ -696,16 +696,7 @@ void Requester<TReq, TRep>::send_request(WriteSampleRef<TReq> & wsref)
 }
 
 #endif // OMG_DDS_RPC_ENHANCED_PROFILE
-/*
-template <class TReq, class TRep>
-bool Requester<TReq, TRep>::receive_reply_connext(
-  Sample<TRep> & reply, 
-  const dds::SampleIdentity_t & relatedRequestId)
-{
-  auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
-  return impl->receive_reply(reply, relatedRequestId);
-}
-*/
+
 template <typename TReq, typename TRep>
 bool Requester<TReq, TRep>::receive_nondata_samples(bool enable)
 {
@@ -721,6 +712,23 @@ bool Requester<TReq, TRep>::receive_reply(
   auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
   return impl->receive_reply(reply, relatedRequestId);
 }
+
+template <class TReq, class TRep>
+typename Requester<TReq, TRep>::RequestDataWriter
+Requester<TReq, TRep>::get_request_datawriter() const
+{
+  auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
+  return impl->get_request_datawriter();
+}
+
+template <class TReq, class TRep>
+typename Requester<TReq, TRep>::ReplyDataReader
+Requester<TReq, TRep>::get_reply_datareader() const
+{
+  auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
+  return impl->get_reply_datareader();
+}
+
 
 template <class TReq, class TRep>
 Requester<TReq, TRep>::~Requester()

@@ -13,6 +13,25 @@ namespace dds {
       : ServiceProxy(impl)
     { }
 
+    template <class TReq>
+    typename dds_type_traits<TReq>::DataWriter 
+      ClientEndpoint::get_request_datawriter() const
+    {
+        auto client_endpoint_impl =
+          static_cast <details::ClientEndpointImpl *>(impl_.get());
+        
+        return client_endpoint_impl->get_request_datawriter<TReq>();
+    }
+
+    template <class TRep>
+    typename dds_type_traits<TRep>::DataReader 
+      ClientEndpoint::get_reply_datareader() const
+    {
+        auto client_endpoint_impl =
+          static_cast <details::ClientEndpointImpl *>(impl_.get());
+
+        return client_endpoint_impl->get_request_datawriter<TRep>();
+    }
 
   } // namespace rpc
 } // namespace dds
@@ -142,12 +161,26 @@ namespace dds {
       
 class ClientEndpointImpl : public ServiceProxyImpl
 {
+protected:
+  virtual DDS::DataWriter * get_request_datawriter() const = 0;
+  virtual DDS::DataReader * get_reply_datareader() const = 0;
+
 public:
   template <class TReq>
-  typename dds_type_traits<TReq>::DataWriter get_request_datawriter() const;
+  typename dds_type_traits<TReq>::DataWriter get_request_datawriter() const
+  {
+    return
+      static_cast <typename dds_type_traits<TReq>::DataWriter>
+        (get_request_datawriter()); // this is a polymorphic dispatch
+  }
 
   template <class TRep>
-  typename dds_type_traits<TRep>::DataReader get_reply_datareader() const;
+  typename dds_type_traits<TRep>::DataReader get_reply_datareader() const
+  {
+    return
+      static_cast <typename dds_type_traits<TRep>::DataReader>
+        (get_reply_datareader()); // this is a polymorphic dispatch
+  }
 
   virtual dds::rpc::ClientParams get_client_params() const = 0;
 
