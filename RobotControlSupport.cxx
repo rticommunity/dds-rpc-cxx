@@ -373,9 +373,9 @@ namespace dds {
         request->data._u.command.com = command;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
         printf("reply received successfully from command %d\n",
-          reply_sample.data().header.relatedRequestId.seqnum.low);
+          reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
       }
 
       float ClientImpl<robot::RobotControl>::setSpeed(float speed)
@@ -387,12 +387,12 @@ namespace dds {
         request->data._u.setSpeed.speed = speed;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
 
         if (reply_sample.data().data._d == robot::RobotControl_setSpeed_hash)
         {
           printf("reply received successfully from setSpeed %d\n",
-            reply_sample.data().header.relatedRequestId.seqnum.low);
+            reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
 
           switch (reply_sample.data().data._u.setSpeed._d)
           {
@@ -428,12 +428,12 @@ namespace dds {
         request->data._u.getSpeed.dummy = 0;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
 
         if (reply_sample.data().data._d == robot::RobotControl_getSpeed_hash)
         {
           printf("reply received successfully from getSpeed %d\n",
-            reply_sample.data().header.relatedRequestId.seqnum.low);
+            reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
 
           switch (reply_sample.data().data._u.getSpeed._d)
           {
@@ -464,12 +464,12 @@ namespace dds {
         request->data._u.getStatus.dummy = 0;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
 
         if (reply_sample.data().data._d == robot::RobotControl_getStatus_hash)
         {
           printf("reply received successfully from getStatus %d\n",
-            reply_sample.data().header.relatedRequestId.seqnum.low);
+            reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
 
           switch (reply_sample.data().data._u.getSpeed._d)
           {

@@ -90,7 +90,7 @@ union RobotControl_Call switch(long)
 
 struct RobotControl_Request 
 {
-  dds::rpc::RequestHeader header;
+  dds::rpc::RequestHeader dds_rpc_request_header;
   RobotControl_Call data;
 };
 
@@ -180,7 +180,7 @@ union RobotControl_Return switch(long)
 
 struct RobotControl_Reply
 {
-  dds::rpc::ReplyHeader   header;
+  dds::rpc::ReplyHeader   dds_rpc_reply_header;
   RobotControl_Return     data;
   dds::rpc::SystemExceptionCode_t sysx;
 };
