@@ -395,15 +395,15 @@ class RequesterImpl : public details::ServiceProxyImpl,
     {
       DDS::WriteParams_t wparams;
       WriteSampleRef<TReq> wsref(req, wparams);
-      strcpy(req.dds_rpc_request_header.serviceName, service_name_.c_str());
+      //strcpy(req.header.serviceName, service_name_.c_str());
   
       if(instance_name_.size() > 0)
-        strcpy(req.dds_rpc_request_header.instanceName, instance_name_.c_str());
+        strcpy(req.header.instanceName, instance_name_.c_str());
   
-      req.dds_rpc_request_header.requestId.seqnum.low = ++sn;
+      req.header.requestId.seqNum.low = ++sn;
 
       super::send_request(wsref);
-      id2id_map[req.dds_rpc_request_header.requestId] = wsref.identity();
+      id2id_map[req.header.requestId] = wsref.identity();
     }
 
     bool receive_reply(
@@ -446,7 +446,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
         try {
           if (sync->impl->take_reply(reply, sync->identity))
           {
-            if ((reply.data().dds_rpc_reply_header.relatedRequestId.seqnum.low % 5) == 0)
+            if ((reply.data().header.relatedRequestId.seqNum.low % 5) == 0)
               throw std::runtime_error("% 5 exception!");
 
             sync->impl->dict[sync->identity].set_value(reply);
@@ -507,12 +507,12 @@ class RequesterImpl : public details::ServiceProxyImpl,
       DDS::WriteParams_t wparams;
       WriteSampleRef<TReq> wsref(req, wparams);
 
-      strcpy(req.dds_rpc_request_header.serviceName, service_name_.c_str());
+      //strcpy(req.header.serviceName, service_name_.c_str());
 
       if (instance_name_.size() > 0)
-        strcpy(req.dds_rpc_request_header.instanceName, instance_name_.c_str());
+        strcpy(req.header.instanceName, instance_name_.c_str());
 
-      req.dds_rpc_request_header.requestId.seqnum.low = ++sn;
+      req.header.requestId.seqNum.low = ++sn;
 
       super::send_request(wsref);
       SyncProxy * sync = new SyncProxy(this, wsref.identity());
@@ -573,8 +573,8 @@ class ReplierImpl : public connext::Replier<TReq, TRep>
         TRep & reply,
         const Sample<TReq> & related_request_sample)
     {
-      reply.dds_rpc_reply_header.relatedRequestId = 
-        related_request_sample.data().dds_rpc_request_header.requestId;
+      reply.header.relatedRequestId = 
+        related_request_sample.data().header.requestId;
       super::send_reply(reply, related_request_sample.identity());
     }
     
@@ -601,16 +601,16 @@ class ReplierImpl : public connext::Replier<TReq, TRep>
 
 class RequesterParamsImpl
 {
-  dds::DomainParticipant * participant_;
+  DDSDomainParticipant * participant_;
   std::string service_name_;
 
 public:
   RequesterParamsImpl();
 
-  void domain_participant(dds::DomainParticipant *participant);
+  void domain_participant(DDSDomainParticipant *participant);
   void service_name(const std::string & service_name);
 
-  dds::DomainParticipant *	domain_participant() const;
+  DDSDomainParticipant *	domain_participant() const;
   std::string service_name() const;
 
 };
@@ -621,16 +621,16 @@ public:
 
 class ReplierParamsImpl
 {
-  dds::DomainParticipant * participant_;
+  DDSDomainParticipant * participant_;
   std::string service_name_;
 
 public:
   ReplierParamsImpl();
 
-  void domain_participant(dds::DomainParticipant *participant);
+  void domain_participant(DDSDomainParticipant *participant);
   void service_name(const std::string & service_name);
 
-  dds::DomainParticipant *	domain_participant() const;
+  DDSDomainParticipant *	domain_participant() const;
   std::string service_name() const;
 
 };

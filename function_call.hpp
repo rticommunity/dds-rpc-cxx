@@ -20,9 +20,9 @@ class ServerImpl
 public:
 
   std::vector<boost::shared_ptr<ServiceEndpointImpl>> dispatchers;
-  dds::DomainParticipant * participant_;
-  dds::Publisher * publisher_;
-  dds::Subscriber * subscriber_;
+  DDSDomainParticipant * participant_;
+  DDSPublisher * publisher_;
+  DDSSubscriber * subscriber_;
 
 public:
   ServerImpl();
@@ -36,11 +36,11 @@ public:
 class ServiceParamsImpl
 {
 private:
-  dds::DomainParticipant * participant_;
-  dds::Publisher * publisher_;
-  dds::Subscriber * subscriber_;
-  dds::DataWriterQos dwqos_; bool dwqos_def;
-  dds::DataReaderQos drqos_; bool drqos_def;
+  DDSDomainParticipant * participant_;
+  DDSPublisher * publisher_;
+  DDSSubscriber * subscriber_;
+  DDS_DataWriterQos dwqos_; bool dwqos_def;
+  DDS_DataReaderQos drqos_; bool drqos_def;
 
   std::string service_name_;
   std::string instance_name_;
@@ -54,21 +54,21 @@ public:
   void instance_name(const std::string &instance_name);
   void request_topic_name(const std::string &req_topic);
   void reply_topic_name(const std::string &rep_topic);
-  void datawriter_qos(const dds::DataWriterQos &qos);
-  void datareader_qos(const dds::DataReaderQos &qos);
-  void publisher(dds::Publisher *publisher);
-  void subscriber(dds::Subscriber *subscriber);
-  void domain_participant(dds::DomainParticipant *part);
+  void datawriter_qos(const dds_entity_traits::DataWriterQos qos);
+  void datareader_qos(const dds_entity_traits::DataReaderQos qos);
+  void publisher(DDSPublisher *publisher);
+  void subscriber(DDSSubscriber *subscriber);
+  void domain_participant(DDSDomainParticipant *part);
 
   std::string service_name() const;
   std::string instance_name() const;
   std::string request_topic_name() const;
   std::string reply_topic_name() const;
-  const dds::DataWriterQos * datawriter_qos() const;
-  const dds::DataReaderQos * datareader_qos() const;
-  dds::Publisher * publisher() const;
-  dds::Subscriber * subscriber() const;
-  dds::DomainParticipant * domain_participant() const;
+  dds_entity_traits::DataWriterQos datawriter_qos() const;
+  dds_entity_traits::DataReaderQos datareader_qos() const;
+  DDSPublisher * publisher() const;
+  DDSSubscriber * subscriber() const;
+  DDSDomainParticipant * domain_participant() const;
 };
 
 class ClientParamsImpl : public ServiceParamsImpl

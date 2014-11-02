@@ -35,7 +35,7 @@ module robot {
 
 struct TooFast 
 { 
-  octet dummy; 
+  dds::rpc::UnusedMember dummy; 
 };//@top-level false
 
 enum Command { START_COMMAND, STOP_COMMAND };
@@ -57,41 +57,41 @@ struct RobotControl_setSpeed_In
 
 struct RobotControl_getSpeed_In 
 { 
-  octet dummy; 
+  dds::rpc::UnusedMember dummy; 
 };//@top-level false
 
 struct RobotControl_getStatus_In 
 { 
-  octet dummy; 
+  dds::rpc::UnusedMember dummy; 
 };//@top-level false
 
-const long RobotControl_command_hash   = 1;
-const long RobotControl_setSpeed_hash  = 2;
-const long RobotControl_getSpeed_hash  = 3;
-const long RobotControl_getStatus_hash = 4;
+const long RobotControl_command_Hash   = 1;
+const long RobotControl_setSpeed_Hash  = 2;
+const long RobotControl_getSpeed_Hash  = 3;
+const long RobotControl_getStatus_Hash = 4;
 
 union RobotControl_Call switch(long) 
 {
     default:
-       dds::rpc::UnknownOperation unknown_operation;
+       dds::rpc::UnknownOperation unknownOp;
 
-    case RobotControl_command_hash:     
+    case RobotControl_command_Hash:     
        RobotControl_command_In command;
 
-    case RobotControl_setSpeed_hash:
+    case RobotControl_setSpeed_Hash:
        RobotControl_setSpeed_In setSpeed;
 
-    case RobotControl_getSpeed_hash:
+    case RobotControl_getSpeed_Hash:
        RobotControl_getSpeed_In getSpeed;
     
-    case RobotControl_getStatus_hash:
+    case RobotControl_getStatus_Hash:
        RobotControl_getStatus_In getStatus;
 };//@top-level false
 
 struct RobotControl_Request 
 {
-  dds::rpc::RequestHeader dds_rpc_request_header;
-  RobotControl_Call data;
+  dds::rpc::RequestHeader header;
+  RobotControl_Call       data;
 };
 
 /***********************************************/
@@ -101,7 +101,7 @@ struct RobotControl_Request
 
 struct RobotControl_command_Out 
 { 
-  octet dummy; 
+  dds::rpc::UnusedMember dummy; 
 };//@top-level false
 
 struct RobotControl_setSpeed_Out 
@@ -114,7 +114,7 @@ struct RobotControl_getSpeed_Out
   float return_; 
 };//@top-level false
 
-const long RobotControl_getSpeed_TooFast_Ex_hash = 1;
+const long TooFast_Ex_Hash = 0xAFED; // HASH
 
 struct RobotControl_getStatus_Out 
 { 
@@ -126,7 +126,7 @@ union RobotControl_command_Result switch(long)
   default:
     dds::rpc::UnknownException unknownEx;
   
-  case dds::rpc::SUCCESS_RETCODE:
+  case dds::rpc::REMOTE_EX_OK:
     RobotControl_command_Out result;
 };//@top-level false
 
@@ -135,10 +135,10 @@ union RobotControl_setSpeed_Result switch(long)
   default:
     dds::rpc::UnknownException unknownEx;
   
-  case dds::rpc::SUCCESS_RETCODE:
+  case dds::rpc::REMOTE_EX_OK:
     RobotControl_setSpeed_Out result;
 
-  case RobotControl_getSpeed_TooFast_Ex_hash:
+  case TooFast_Ex_Hash:
     TooFast toofast_ex;
 };//@top-level false
 
@@ -147,7 +147,7 @@ union RobotControl_getSpeed_Result switch(long)
   default:
     dds::rpc::UnknownException unknownEx;
   
-  case dds::rpc::SUCCESS_RETCODE:
+  case dds::rpc::REMOTE_EX_OK:
     RobotControl_getSpeed_Out result;
 };//@top-level false
 
@@ -156,7 +156,7 @@ union RobotControl_getStatus_Result switch(long)
   default:
     dds::rpc::UnknownException unknownEx;
   
-  case dds::rpc::SUCCESS_RETCODE:
+  case dds::rpc::REMOTE_EX_OK:
     RobotControl_getStatus_Out result;
 };//@top-level false
 
@@ -165,24 +165,23 @@ union RobotControl_Return switch(long)
   default: 
     dds::rpc::UnknownOperation unknownOp;
 
-  case RobotControl_command_hash:
+  case RobotControl_command_Hash:
     RobotControl_command_Result command;
 
-  case RobotControl_setSpeed_hash:
+  case RobotControl_setSpeed_Hash:
     RobotControl_setSpeed_Result setSpeed;
 
-  case RobotControl_getSpeed_hash:
+  case RobotControl_getSpeed_Hash:
     RobotControl_getSpeed_Result getSpeed;
 
-  case RobotControl_getStatus_hash:
+  case RobotControl_getStatus_Hash:
     RobotControl_getStatus_Result getStatus;
 };//@top-level false
 
 struct RobotControl_Reply
 {
-  dds::rpc::ReplyHeader   dds_rpc_reply_header;
-  RobotControl_Return     data;
-  dds::rpc::SystemExceptionCode_t sysx;
+  dds::rpc::ReplyHeader  header;
+  RobotControl_Return    data;
 };
 
 }; // module robot

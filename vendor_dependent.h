@@ -48,15 +48,8 @@ namespace dds {
 
   typedef ::DDS_Duration_t            Duration_t;
   typedef ::DDS_SampleInfo            SampleInfo;
-  typedef ::DDS_SampleInfoSeq         SampleInfoSeq;
-  typedef ::DDS_DataReaderQos         DataReaderQos;
-  typedef ::DDS_DataWriterQos         DataWriterQos;
+  typedef ::DDS_SampleInfoSeq         SampleInfoSeq;  
   
-  
-  typedef ::DDSDomainParticipant      DomainParticipant;
-  typedef ::DDSPublisher              Publisher;
-  typedef ::DDSSubscriber             Subscriber;
-
   using connext::Sample;
   using connext::SampleRef;
   using connext::WriteSample;
@@ -76,6 +69,15 @@ namespace dds {
     typedef LoanedSamples<T>         LoanedSamplesType;
     typedef SampleIterator<T, false> iterator;
     typedef SampleIterator<T, true>  const_iterator;
+  };
+
+  struct dds_entity_traits
+  {
+    typedef ::DDSDomainParticipant*       DomainParticipant;
+    typedef ::DDSPublisher*               Publisher;
+    typedef ::DDSSubscriber*              Subscriber;
+    typedef ::DDS_DataReaderQos const *   DataReaderQos;
+    typedef ::DDS_DataWriterQos const *   DataWriterQos;
   };
 
   template <class T>

@@ -87,7 +87,7 @@ namespace dds { namespace rpc {
     return *this;
   }
   
-  ReplierParams & ReplierParams::domain_participant(dds::DomainParticipant * part)
+  ReplierParams & ReplierParams::domain_participant(DDSDomainParticipant * part)
   {
     impl_->domain_participant(part);
     return *this;
@@ -116,7 +116,7 @@ namespace dds { namespace rpc {
       : participant_(0)
     { }
 
-    void	RequesterParamsImpl::domain_participant(dds::DomainParticipant *participant)
+    void	RequesterParamsImpl::domain_participant(DDSDomainParticipant *participant)
     {
       participant_ = participant;
     }
@@ -126,7 +126,7 @@ namespace dds { namespace rpc {
       service_name_ = service_name;
     }
 
-    dds::DomainParticipant *	RequesterParamsImpl::domain_participant() const
+    DDSDomainParticipant *	RequesterParamsImpl::domain_participant() const
     {
       return participant_;
     }
@@ -140,7 +140,7 @@ namespace dds { namespace rpc {
       : participant_(0)
     { }
 
-    void	ReplierParamsImpl::domain_participant(dds::DomainParticipant *participant)
+    void	ReplierParamsImpl::domain_participant(DDSDomainParticipant *participant)
     {
       participant_ = participant;
     }
@@ -150,7 +150,7 @@ namespace dds { namespace rpc {
       service_name_ = service_name;
     }
 
-    dds::DomainParticipant *	ReplierParamsImpl::domain_participant() const
+    DDSDomainParticipant *	ReplierParamsImpl::domain_participant() const
     {
       return participant_;
     }

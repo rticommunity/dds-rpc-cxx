@@ -45,21 +45,21 @@ public:
   ServiceParams & instance_name(const std::string &instance_name);
   ServiceParams & request_topic_name(const std::string &req_topic);
   ServiceParams & reply_topic_name(const std::string &rep_topic);
-  ServiceParams & datawriter_qos(const dds::DataWriterQos &qos);
-  ServiceParams & datareader_qos(const dds::DataReaderQos &qos);
-  ServiceParams & publisher(dds::Publisher *publisher);
-  ServiceParams & subscriber(dds::Subscriber *subscriber);
-  ServiceParams & domain_participant(dds::DomainParticipant *part);
+  ServiceParams & datawriter_qos(dds_entity_traits::DataWriterQos qos);
+  ServiceParams & datareader_qos(dds_entity_traits::DataReaderQos qos);
+  ServiceParams & publisher(dds_entity_traits::Publisher publisher);
+  ServiceParams & subscriber(dds_entity_traits::Subscriber subscriber);
+  ServiceParams & domain_participant(dds_entity_traits::DomainParticipant part);
 
   std::string service_name() const;
   std::string instance_name() const;
   std::string request_topic_name() const;
   std::string reply_topic_name() const;
-  const dds::DataWriterQos * datawriter_qos() const;
-  const dds::DataReaderQos * datareader_qos() const;
-  dds::Publisher * publisher() const;
-  dds::Subscriber * subscriber() const;
-  dds::DomainParticipant * domain_participant() const;
+  dds_entity_traits::DataWriterQos datawriter_qos() const;
+  dds_entity_traits::DataReaderQos datareader_qos() const;
+  dds_entity_traits::Publisher publisher() const;
+  dds_entity_traits::Subscriber subscriber() const;
+  dds_entity_traits::DomainParticipant domain_participant() const;
 
 protected:
   typedef details::vendor_dependent<ServiceParams>::type VendorDependent;
@@ -80,21 +80,21 @@ public:
   ClientParams & instance_name(const std::string &instance_name);
   ClientParams & request_topic_name(const std::string &req_topic);
   ClientParams & reply_topic_name(const std::string &rep_topic);
-  ClientParams & datawriter_qos(const dds::DataWriterQos &qos);
-  ClientParams & datareader_qos(const dds::DataReaderQos &qos);
-  ClientParams & publisher(dds::Publisher *publisher);
-  ClientParams & subscriber(dds::Subscriber *subscriber);
-  ClientParams & domain_participant(dds::DomainParticipant *part);
+  ClientParams & datawriter_qos(const dds_entity_traits::DataWriterQos & qos);
+  ClientParams & datareader_qos(const dds_entity_traits::DataReaderQos & qos);
+  ClientParams & publisher(dds_entity_traits::Publisher publisher);
+  ClientParams & subscriber(dds_entity_traits::Subscriber subscriber);
+  ClientParams & domain_participant(dds_entity_traits::DomainParticipant part);
 
   const std::string & service_name() const;
   const std::string & instance_name() const;
   const std::string & request_topic_name() const;
   const std::string & reply_topic_name() const;
-  const dds::DataWriterQos * datawriter_qos() const;
-  const dds::DataReaderQos * datareader_qos() const;
-  dds::Publisher * publisher() const;
-  dds::Subscriber * subscriber() const;
-  dds::DomainParticipant * domain_participant() const;
+  const dds_entity_traits::DataWriterQos & datawriter_qos() const;
+  const dds_entity_traits::DataReaderQos & datareader_qos() const;
+  dds_entity_traits::Publisher publisher() const;
+  dds_entity_traits::Subscriber subscriber() const;
+  dds_entity_traits::DomainParticipant domain_participant() const;
 
 protected:
   typedef details::vendor_dependent<ClientParams>::type VendorDependent;

@@ -335,20 +335,20 @@ public:
     RequesterParams & 	requester_listener(
         RequesterListener<TReq, TRep> *listener);
 
-    RequesterParams & 	domain_participant(dds::DomainParticipant * participant);
-    RequesterParams & 	publisher(dds::Publisher * publisher);
-    RequesterParams & 	subscriber(dds::Subscriber * subscriber);
-    RequesterParams & 	datawriter_qos(const dds::DataWriterQos & qos);
-    RequesterParams & 	datareader_qos(const dds::DataReaderQos & qos);
+    RequesterParams & 	domain_participant(dds_entity_traits::DomainParticipant participant);
+    RequesterParams & 	publisher(dds_entity_traits::Publisher publisher);
+    RequesterParams & 	subscriber(dds_entity_traits::Subscriber subscriber);
+    RequesterParams & 	datawriter_qos(dds_entity_traits::DataWriterQos qos);
+    RequesterParams & 	datareader_qos(dds_entity_traits::DataReaderQos qos);
     RequesterParams & 	service_name (const std::string &name);
     RequesterParams & 	request_topic_name (const std::string &name);
     RequesterParams & 	reply_topic_name (const std::string &name);
 
-    dds::DomainParticipant * domain_participant() const;
-    dds::Publisher * publisher() const;
-    dds::Subscriber * subscriber() const;
-    const dds::DataWriterQos & datawriter_qos() const;
-    const dds::DataReaderQos & datareader_qos() const;
+    dds_entity_traits::DomainParticipant domain_participant() const;
+    dds_entity_traits::Publisher publisher() const;
+    dds_entity_traits::Subscriber subscriber() const;
+    dds_entity_traits::DataWriterQos datawriter_qos() const;
+    dds_entity_traits::DataReaderQos datareader_qos() const;
     ListenerBase * simple_requester_listener() const;
     ListenerBase * requester_listener() const;
     std::string service_name() const;
@@ -379,27 +379,27 @@ public:
     ReplierParams & replier_listener (
         ReplierListener<TReq, TRep> *listener);
     
-    ReplierParams & domain_participant(dds::DomainParticipant *participant);
+    ReplierParams & domain_participant(dds_entity_traits::DomainParticipant participant);
     ReplierParams & service_name (const std::string &service_name);
     ReplierParams & instance_name (const std::string &service_name);
     ReplierParams & request_topic_name (const std::string &req_topic);
     ReplierParams & reply_topic_name (const std::string &rep_topic);
-    ReplierParams & datawriter_qos (const dds::DataWriterQos &qos);
-    ReplierParams & datareader_qos (const dds::DataReaderQos &qos);
-    ReplierParams & publisher (dds::Publisher *publisher);
-    ReplierParams & subscriber (dds::Subscriber *subscriber);
+    ReplierParams & datawriter_qos(dds_entity_traits::DataWriterQos qos);
+    ReplierParams & datareader_qos(dds_entity_traits::DataReaderQos qos);
+    ReplierParams & publisher(dds_entity_traits::Publisher publisher);
+    ReplierParams & subscriber(dds_entity_traits::Subscriber subscriber);
 
-    dds::DomainParticipant * domain_participant() const;
+    dds_entity_traits::DomainParticipant domain_participant() const;
     ListenerBase * simple_replier_listener() const;
     ListenerBase * replier_listener() const;
     std::string service_name() const;
     std::string instance_name() const;
     std::string request_topic_name() const;
     std::string reply_topic_name() const;
-    const dds::DataWriterQos * datawriter_qos() const;
-    const dds::DataReaderQos * datareader_qos() const;
-    dds::Publisher * publisher() const;
-    dds::Subscriber * subscriber() const;
+    dds_entity_traits::DataWriterQos datawriter_qos() const;
+    dds_entity_traits::DataReaderQos datareader_qos() const;
+    dds_entity_traits::Publisher publisher() const;
+    dds_entity_traits::Subscriber subscriber() const;
 
 private:
   typedef details::vendor_dependent<ReplierParams>::type VendorDependent;

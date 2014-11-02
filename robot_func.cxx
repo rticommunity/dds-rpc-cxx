@@ -80,12 +80,23 @@ public:
 void server_func(int domainid, const std::string & service_name)
 {
   try {
-    boost::shared_ptr<MyRobot> myrobot =
+    boost::shared_ptr<MyRobot> myrobot1 =
       boost::make_shared<MyRobot>("Rock-n-Rolling STATUS...");
+
+    boost::shared_ptr<MyRobot> myrobot2 =
+      boost::make_shared<MyRobot>("Cool STATUS...");
 
     dds::rpc::Server server;
 
-    RobotControlSupport::Service robot_service(*myrobot, server);
+    RobotControlSupport::Service 
+      robot_service1(*myrobot1, 
+                     server, 
+                     dds::rpc::ServiceParams().instance_name("Rock"));
+    
+    RobotControlSupport::Service 
+      robot_service2(*myrobot2, 
+                     server, 
+                     dds::rpc::ServiceParams().instance_name("Cool"));
 
     while (true)
       server.run(dds::Duration_t::from_millis(500));
@@ -102,6 +113,7 @@ void client_func(int domainid, const std::string & service_name)
 {
   try {
     robot::RobotControlSupport::Client robot_client;
+    
     robot_client.bind("robot1");
     NDDSUtility::sleep(dds::Duration_t::from_millis(1000));
 

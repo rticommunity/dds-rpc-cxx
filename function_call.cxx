@@ -141,31 +141,31 @@ ServiceParams & ServiceParams::instance_name(const std::string &instance_name)
   return *this;
 }
 
-ServiceParams & ServiceParams::datawriter_qos(const dds::DataWriterQos &qos)
+ServiceParams & ServiceParams::datawriter_qos(dds_entity_traits::DataWriterQos qos)
 {
   impl_->datawriter_qos(qos);
   return *this;
 }
 
-ServiceParams & ServiceParams::datareader_qos(const dds::DataReaderQos &qos)
+ServiceParams & ServiceParams::datareader_qos(dds_entity_traits::DataReaderQos qos)
 {
   impl_->datareader_qos(qos);
   return *this;
 }
 
-ServiceParams & ServiceParams::publisher(dds::Publisher *publisher)
+ServiceParams & ServiceParams::publisher(dds_entity_traits::Publisher publisher)
 {
   impl_->publisher(publisher);
   return *this;
 }
 
-ServiceParams & ServiceParams::subscriber(dds::Subscriber *subscriber)
+ServiceParams & ServiceParams::subscriber(dds_entity_traits::Subscriber subscriber)
 {
   impl_->subscriber(subscriber);
   return *this;
 }
 
-ServiceParams & ServiceParams::domain_participant(dds::DomainParticipant *part)
+ServiceParams & ServiceParams::domain_participant(dds_entity_traits::DomainParticipant part)
 {
   impl_->domain_participant(part);
   return *this;
@@ -191,27 +191,27 @@ std::string ServiceParams::reply_topic_name() const
   return impl_->reply_topic_name();
 }
 
-const dds::DataWriterQos * ServiceParams::datawriter_qos() const
+dds_entity_traits::DataWriterQos ServiceParams::datawriter_qos() const
 {
   return impl_->datawriter_qos();
 }
 
-const dds::DataReaderQos * ServiceParams::datareader_qos() const
+dds_entity_traits::DataReaderQos ServiceParams::datareader_qos() const
 {
   return impl_->datareader_qos();
 }
 
-dds::Publisher * ServiceParams::publisher() const
+dds_entity_traits::Publisher ServiceParams::publisher() const
 {
   return impl_->publisher();
 }
 
-dds::Subscriber * ServiceParams::subscriber() const
+dds_entity_traits::Subscriber ServiceParams::subscriber() const
 {
   return impl_->subscriber();
 }
 
-dds::DomainParticipant * ServiceParams::domain_participant() const
+dds_entity_traits::DomainParticipant ServiceParams::domain_participant() const
 {
   return impl_->domain_participant();
 }
@@ -285,29 +285,29 @@ namespace rpc {
       reply_topic_name_ = rep_topic;
     }
 
-    void ServiceParamsImpl::datawriter_qos(const dds::DataWriterQos &qos)
+    void ServiceParamsImpl::datawriter_qos(const dds_entity_traits::DataWriterQos qos)
     {
-      dwqos_ = qos;
+      dwqos_ = *qos;
       dwqos_def = true;
     }
 
-    void ServiceParamsImpl::datareader_qos(const dds::DataReaderQos &qos)
+    void ServiceParamsImpl::datareader_qos(dds_entity_traits::DataReaderQos qos)
     {
-      drqos_ = qos;
+      drqos_ = *qos;
       drqos_def = true;
     }
 
-    void ServiceParamsImpl::publisher(dds::Publisher *publisher)
+    void ServiceParamsImpl::publisher(DDSPublisher *publisher)
     {
       publisher_ = publisher;
     }
 
-    void ServiceParamsImpl::subscriber(dds::Subscriber *subscriber)
+    void ServiceParamsImpl::subscriber(DDSSubscriber *subscriber)
     {
       subscriber_ = subscriber;
     }
 
-    void ServiceParamsImpl::domain_participant(dds::DomainParticipant *part)
+    void ServiceParamsImpl::domain_participant(DDSDomainParticipant *part)
     {
       participant_ = part;
     }
@@ -332,7 +332,7 @@ namespace rpc {
       return reply_topic_name_;
     }
 
-    const dds::DataWriterQos * ServiceParamsImpl::datawriter_qos() const
+    dds_entity_traits::DataWriterQos ServiceParamsImpl::datawriter_qos() const
     {
       if (dwqos_def)
         return &dwqos_;
@@ -340,7 +340,7 @@ namespace rpc {
         return 0;
     }
 
-    const dds::DataReaderQos * ServiceParamsImpl::datareader_qos() const
+    dds_entity_traits::DataReaderQos ServiceParamsImpl::datareader_qos() const
     {
       if (drqos_def)
         return &drqos_;
@@ -348,17 +348,17 @@ namespace rpc {
         return 0;
     }
 
-    dds::Publisher * ServiceParamsImpl::publisher() const
+    DDSPublisher * ServiceParamsImpl::publisher() const
     {
       return publisher_;
     }
 
-    dds::Subscriber * ServiceParamsImpl::subscriber() const
+    DDSSubscriber * ServiceParamsImpl::subscriber() const
     {
       return subscriber_;
     }
 
-    dds::DomainParticipant * ServiceParamsImpl::domain_participant() const
+    dds_entity_traits::DomainParticipant ServiceParamsImpl::domain_participant() const
     {
       return participant_;
     }

@@ -13,7 +13,7 @@ using namespace robot;
 
 void client_rr(int domainid, const std::string & service_name)
 {
-  dds::DomainParticipant * participant =
+  dds_entity_traits::DomainParticipant participant =
     TheParticipantFactory->create_participant(
     domainid,
     DDS::PARTICIPANT_QOS_DEFAULT,
@@ -36,13 +36,13 @@ void client_rr(int domainid, const std::string & service_name)
 
   //while (true)
   {
-    request->data._d = RobotControl_setSpeed_hash;
+    request->data._d = RobotControl_setSpeed_Hash;
     request->data._u.setSpeed.speed = 55;
 
     requester.send_request(*request);
-    requester.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
+    requester.receive_reply(reply_sample, request->header.requestId);
     printf("reply received successfully %d\n",
-      i = reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+      i = reply_sample.data().header.relatedRequestId.seqNum.low);
   }
 
   //while (true)
@@ -53,7 +53,7 @@ void client_rr(int domainid, const std::string & service_name)
     reply_sample = reply_fut.get();
 
     printf("reply received successfully %d\n",
-      i = reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+      i = reply_sample.data().header.relatedRequestId.seqNum.low);
   }
 
   auto int_lambda = [](future<int> && fint)
@@ -78,7 +78,7 @@ void client_rr(int domainid, const std::string & service_name)
             Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
             printf("reply received successfully %d\n",
-              i = reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+              i = reply_sample.data().header.relatedRequestId.seqNum.low);
 
             return 888;
           }
@@ -110,9 +110,9 @@ void client_rr(int domainid, const std::string & service_name)
               Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
               printf("reply received successfully %d\n",
-                i = reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+                i = reply_sample.data().header.relatedRequestId.seqNum.low);
 
-              request->data._d = RobotControl_getStatus_hash;
+              request->data._d = RobotControl_getStatus_Hash;
               return requester.send_request_async(*request);
             }
             catch (std::runtime_error & ex) {
@@ -130,7 +130,7 @@ void client_rr(int domainid, const std::string & service_name)
            try {
              Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
-             if (reply_sample.data().data._u.getStatus._d == dds::rpc::SUCCESS_RETCODE)
+             if (reply_sample.data().data._u.getStatus._d == dds::rpc::REMOTE_EX_OK)
              {
                printf("second .then reply received successfully %s\n",
                       reply_sample.data().data._u.getStatus._u.result.status.msg);
@@ -153,7 +153,7 @@ void client_rr(int domainid, const std::string & service_name)
 
 void print_request(const RobotControl_Request & request)
 {
-  if (request.data._d == RobotControl_command_hash)
+  if (request.data._d == RobotControl_command_Hash)
   {
     switch (request.data._u.command.com)
     {
@@ -171,7 +171,7 @@ void print_request(const RobotControl_Request & request)
 
 void server_rr(int domainid, const std::string & service_name)
 {
-  dds::DomainParticipant * participant =
+  dds_entity_traits::DomainParticipant participant =
     TheParticipantFactory->create_participant(
     domainid,
     DDS::PARTICIPANT_QOS_DEFAULT,
@@ -196,8 +196,8 @@ void server_rr(int domainid, const std::string & service_name)
       print_request(request_sample.data());
 
       unique_data<RobotControl_Reply> reply;
-      reply->data._d = RobotControl_command_hash;
-      reply->data._u.command._d = dds::rpc::SUCCESS_RETCODE;
+      reply->data._d = RobotControl_command_Hash;
+      reply->data._u.command._d = dds::rpc::REMOTE_EX_OK;
       //reply->data._u.command._u.result.dummy = 0x0;
 
       // FIXME replier.send_reply_connext(*reply, request_sample);

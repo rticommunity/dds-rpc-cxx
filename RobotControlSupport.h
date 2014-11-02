@@ -9,12 +9,14 @@
 namespace robot {
 
   class RobotControlSupport;
+  class RobotControlAsync;
 
   class RobotControl
   {
   public:
 
     typedef RobotControl         InterfaceType;
+    typedef RobotControlAsync    AsyncInterfaceType;
     typedef RobotControlSupport  SupportType;
     typedef RobotControl_Request RequestType;
     typedef RobotControl_Reply   ReplyType;
@@ -48,6 +50,7 @@ namespace robot {
   {
   public:
     typedef robot::RobotControl         InterfaceType;
+    typedef robot::RobotControlAsync    AsyncInterfaceType;
     typedef robot::RobotControl_Request RequestType;
     typedef robot::RobotControl_Reply   ReplyType;
 

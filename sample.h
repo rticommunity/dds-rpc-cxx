@@ -64,6 +64,8 @@ namespace dds {
     typedef const dds::SampleInfoSeq      ConstSeq;
   };
 
+  struct dds_entity_traits; // defined in vendor_dependent.h
+
   template <typename T>
   class Sample 
   {
@@ -72,7 +74,6 @@ namespace dds {
     typedef T&                                            DataReference;
     typedef const T&                                      ConstDataReference;
     typedef typename dds::dds_type_traits<T>::Seq         Seq;
-    typedef typename dds::dds_type_traits<T>::TypeSupport TypeSupport;
     typedef typename dds::dds_type_traits<T>::DataReader  DataReader;
     typedef typename dds::dds_type_traits<T>::DataWriter  DataWriter;
 
@@ -116,6 +117,14 @@ namespace dds {
   template <typename T>
   class SampleRef
   {
+  public:
+    typedef T                                             Data;
+    typedef T&                                            DataReference;
+    typedef const T&                                      ConstDataReference;
+    typedef typename dds::dds_type_traits<T>::Seq         Seq;
+    typedef typename dds::dds_type_traits<T>::DataReader  DataReader;
+    typedef typename dds::dds_type_traits<T>::DataWriter  DataWriter;
+
   public:
     SampleRef();
 
@@ -378,11 +387,23 @@ namespace dds {
 
     WriteSample(const T & data);
 
-    WriteSample(WriteSampleRef<T> wsref);
+    WriteSample(const WriteSampleRef<T> & wsref);
 
-    WriteSample & operator = (WriteSampleRef<T> wsref);
+    WriteSample & operator = (const WriteSampleRef<T> & wsref);
 
-    SampleIdentity_t identity() const;
+    WriteSample & operator = (const WriteSample<T> & ws);
+
+    const T & data() const;
+
+    T & data();
+
+    void set_data(const T & data);
+
+    void set_identity(const dds::SampleIdentity_t & id);
+
+    void swap(WriteSample & other) throw();
+
+    dds::SampleIdentity_t identity() const;    
   };
 
   template <typename T>
@@ -392,25 +413,27 @@ namespace dds {
 
     WriteSampleRef();
 
-    WriteSampleRef(T & data);
+    WriteSampleRef(const T & data);
 
     WriteSampleRef(WriteSample<T> & ws);
 
+    WriteSampleRef(const WriteSampleRef<T> & wsref);
+
     WriteSampleRef & operator = (WriteSample<T> & ws);
 
-    T & data() const;
+    WriteSampleRef & operator = (const WriteSampleRef<T> & wsref);
 
-    void set_data(T & data);
+    const T & data() const;
 
-    void set_data(T * data);
+    T & data();
 
-    bool is_nil_data() const;
+    void set_data(const T & data);
 
-    bool is_nil_info() const;
+    void set_identity(const dds::SampleIdentity_t & id);
 
-    void swap(WriteSampleRef & other);
+    void swap(WriteSampleRef & other) throw();
 
-    SampleIdentity_t identity() const;
+    dds::SampleIdentity_t identity() const;
   };
 
 

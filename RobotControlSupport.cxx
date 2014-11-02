@@ -108,22 +108,22 @@ namespace dds {
 
       bool is_command(const Sample<robot::RobotControl_Request> & request_sample)
       {
-        return request_sample.data().data._d == robot::RobotControl_command_hash;
+        return request_sample.data().data._d == robot::RobotControl_command_Hash;
       }
 
       bool is_getSpeed(const Sample<robot::RobotControl_Request> & request_sample)
       {
-        return request_sample.data().data._d == robot::RobotControl_getSpeed_hash;
+        return request_sample.data().data._d == robot::RobotControl_getSpeed_Hash;
       }
 
       bool is_setSpeed(const Sample<robot::RobotControl_Request> & request_sample)
       {
-        return request_sample.data().data._d == robot::RobotControl_setSpeed_hash;
+        return request_sample.data().data._d == robot::RobotControl_setSpeed_Hash;
       }
 
       bool is_getStatus(const Sample<robot::RobotControl_Request> & request_sample)
       {
-        return request_sample.data().data._d == robot::RobotControl_getStatus_hash;
+        return request_sample.data().data._d == robot::RobotControl_getStatus_Hash;
       }
 
       unique_data<robot::RobotControl_Reply> do_command(
@@ -134,8 +134,8 @@ namespace dds {
 
         service_impl->command(request_sample.data().data._u.command.com);
 
-        reply->data._d = robot::RobotControl_command_hash;
-        reply->data._u.command._d = dds::rpc::SUCCESS_RETCODE;
+        reply->data._d = robot::RobotControl_command_Hash;
+        reply->data._u.command._d = dds::rpc::REMOTE_EX_OK;
         reply->data._u.command._u.result.dummy = 0;
 
         return reply;
@@ -153,14 +153,14 @@ namespace dds {
             service_impl->setSpeed(request_sample.data().data._u.setSpeed.speed);
           //printf("do_setSpeed = %d\n", request_sample.data().data._u.setSpeed.speed);
 
-          reply->data._d = robot::RobotControl_setSpeed_hash;
-          reply->data._u.setSpeed._d = dds::rpc::SUCCESS_RETCODE;
+          reply->data._d = robot::RobotControl_setSpeed_Hash;
+          reply->data._u.setSpeed._d = dds::rpc::REMOTE_EX_OK;
           reply->data._u.setSpeed._u.result.return_ = speed;
         }
         catch (robot::TooFast & toofast)
         {
-          reply->data._d = robot::RobotControl_setSpeed_hash;
-          reply->data._u.setSpeed._d = robot::RobotControl_getSpeed_TooFast_Ex_hash;
+          reply->data._d = robot::RobotControl_setSpeed_Hash;
+          reply->data._u.setSpeed._d = robot::TooFast_Ex_Hash;
           reply->data._u.setSpeed._u.toofast_ex = toofast;
         }
 
@@ -175,8 +175,8 @@ namespace dds {
 
         float speed = service_impl->getSpeed();
 
-        reply->data._d = robot::RobotControl_getSpeed_hash;
-        reply->data._u.getSpeed._d = dds::rpc::SUCCESS_RETCODE;
+        reply->data._d = robot::RobotControl_getSpeed_Hash;
+        reply->data._u.getSpeed._d = dds::rpc::REMOTE_EX_OK;
         reply->data._u.getSpeed._u.result.return_ = speed;
 
         return reply;
@@ -188,8 +188,8 @@ namespace dds {
       {
         unique_data<robot::RobotControl_Reply> reply;
 
-        reply->data._d = robot::RobotControl_getStatus_hash;
-        reply->data._u.getStatus._d = dds::rpc::SUCCESS_RETCODE;
+        reply->data._d = robot::RobotControl_getStatus_Hash;
+        reply->data._u.getStatus._d = dds::rpc::REMOTE_EX_OK;
         service_impl->getStatus(reply->data._u.getStatus._u.result.status);
 
         return reply;
@@ -212,7 +212,7 @@ namespace dds {
             reply = do_getStatus(request_sample, robotimpl_);
           else
           {
-            reply->sysx = dds::rpc::UNKNOWN_OPERATION;
+            reply->header.remoteEx = dds::rpc::REMOTE_EX_UNKNOWN_OPERATION;
             reply->data._d = 0; // default
           }
 
@@ -369,13 +369,13 @@ namespace dds {
         unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
-        request->data._d = robot::RobotControl_command_hash;
+        request->data._d = robot::RobotControl_command_Hash;
         request->data._u.command.com = command;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
+        requester_.receive_reply(reply_sample, request->header.requestId);
         printf("reply received successfully from command %d\n",
-          reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+          reply_sample.data().header.relatedRequestId.seqNum.low);
       }
 
       float ClientImpl<robot::RobotControl>::setSpeed(float speed)
@@ -383,25 +383,25 @@ namespace dds {
         unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
-        request->data._d = robot::RobotControl_setSpeed_hash;
+        request->data._d = robot::RobotControl_setSpeed_Hash;
         request->data._u.setSpeed.speed = speed;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
+        requester_.receive_reply(reply_sample, request->header.requestId);
 
-        if (reply_sample.data().data._d == robot::RobotControl_setSpeed_hash)
+        if (reply_sample.data().data._d == robot::RobotControl_setSpeed_Hash)
         {
           printf("reply received successfully from setSpeed %d\n",
-            reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+            reply_sample.data().header.relatedRequestId.seqNum.low);
 
           switch (reply_sample.data().data._u.setSpeed._d)
           {
-            case dds::rpc::SUCCESS_RETCODE:
+          case dds::rpc::REMOTE_EX_OK:
             {
                 return reply_sample.data().data._u.setSpeed._u.result.return_;
                 break;
             }
-            case robot::RobotControl_getSpeed_TooFast_Ex_hash:
+            case robot::TooFast_Ex_Hash:
             {
                 throw reply_sample.data().data._u.setSpeed._u.toofast_ex;
                 break;
@@ -424,20 +424,20 @@ namespace dds {
         unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
-        request->data._d = robot::RobotControl_getSpeed_hash;
+        request->data._d = robot::RobotControl_getSpeed_Hash;
         request->data._u.getSpeed.dummy = 0;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
+        requester_.receive_reply(reply_sample, request->header.requestId);
 
-        if (reply_sample.data().data._d == robot::RobotControl_getSpeed_hash)
+        if (reply_sample.data().data._d == robot::RobotControl_getSpeed_Hash)
         {
           printf("reply received successfully from getSpeed %d\n",
-            reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+            reply_sample.data().header.relatedRequestId.seqNum.low);
 
           switch (reply_sample.data().data._u.getSpeed._d)
           {
-            case dds::rpc::SUCCESS_RETCODE:
+          case dds::rpc::REMOTE_EX_OK:
             {
               return reply_sample.data().data._u.getSpeed._u.result.return_;
               break;
@@ -460,20 +460,20 @@ namespace dds {
         unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
-        request->data._d = robot::RobotControl_getStatus_hash;
+        request->data._d = robot::RobotControl_getStatus_Hash;
         request->data._u.getStatus.dummy = 0;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->dds_rpc_request_header.requestId);
+        requester_.receive_reply(reply_sample, request->header.requestId);
 
-        if (reply_sample.data().data._d == robot::RobotControl_getStatus_hash)
+        if (reply_sample.data().data._d == robot::RobotControl_getStatus_Hash)
         {
           printf("reply received successfully from getStatus %d\n",
-            reply_sample.data().dds_rpc_reply_header.relatedRequestId.seqnum.low);
+            reply_sample.data().header.relatedRequestId.seqNum.low);
 
           switch (reply_sample.data().data._u.getSpeed._d)
           {
-            case dds::rpc::SUCCESS_RETCODE:
+            case dds::rpc::REMOTE_EX_OK:
             {
               robot::Status_copy(&status, &reply_sample.data().data._u.getStatus._u.result.status);
               break;
@@ -523,12 +523,6 @@ namespace dds {
 /*
 Client::Client()
 : impl_(boost::make_shared<details::ClientImpl>())
-{}
-
-Client::Client(dds::DomainParticipant * part,
-  dds::Publisher * pub,
-  dds::Subscriber * sub)
-  : impl_(boost::make_shared<details::ClientImpl>(part, pub, sub))
 {}
 
 */
