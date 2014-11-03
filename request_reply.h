@@ -24,17 +24,17 @@ public:
   std::vector<std::string> get_discoverd_service_instances() const;
 
   void wait_for_service();
-  void wait_for_service(const dds::Duration_t & maxWait);
+  void wait_for_service(const dds::Duration & maxWait);
 
   void wait_for_service(std::string instanceName);
-  void wait_for_service(const dds::Duration_t & maxWait,
+  void wait_for_service(const dds::Duration & maxWait,
                         std::string instanceName);
 
   void wait_for_services(int count);
-  void wait_for_services(const dds::Duration_t & maxWait, int count);
+  void wait_for_services(const dds::Duration & maxWait, int count);
 
   void wait_for_services(const std::vector<std::string> & instanceNames);
-  void wait_for_services(const dds::Duration_t & maxWait,
+  void wait_for_services(const dds::Duration & maxWait,
                          const std::vector<std::string> & instanceNames);
 
   future<void> wait_for_service_async();
@@ -99,36 +99,36 @@ public:
 
     bool receive_reply(
       Sample<TRep>& reply,
-      const DDS_Duration_t& timeout);
+      const dds::Duration & timeout);
 
     bool receive_reply(
       SampleRef<TRep> reply,
-      const DDS_Duration_t& timeout);
+      const dds::Duration & timeout);
 
     bool receive_reply(
       Sample<TRep>& reply,
-      const SampleIdentity_t & relatedRequestId);
+      const dds::SampleIdentity & relatedRequestId);
 
     bool receive_reply(
       SampleRef<TRep> reply,
-      const SampleIdentity_t & relatedRequestId);
+      const dds::SampleIdentity & relatedRequestId);
 
-    LoanedSamples<TRep> receive_replies(const DDS_Duration_t& max_wait);
+    LoanedSamples<TRep> receive_replies(const dds::Duration & max_wait);
 
     LoanedSamples<TRep> receive_replies(int min_count,
                                         int max_count,
-                                        const DDS_Duration_t & max_wait);
+                                        const dds::Duration & max_wait);
 
     bool wait_for_replies(
         int min_count,
-        const DDS_Duration_t& max_wait);
+        const dds::Duration & max_wait);
 
-    bool wait_for_replies(const DDS_Duration_t& max_wait);
+    bool wait_for_replies(const dds::Duration & max_wait);
 
     bool wait_for_replies(
         int min_count,
-        const DDS_Duration_t& max_wait,
-        const SampleIdentity_t & related_request_id);
+        const dds::Duration & max_wait,
+        const dds::SampleIdentity & related_request_id);
 
     bool take_reply(Sample<TRep>& reply);
 
@@ -136,20 +136,20 @@ public:
 
     bool take_reply(
         Sample<TRep>& reply, 
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     bool take_reply(
         SampleRef<TRep> reply, 
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     LoanedSamples<TRep> take_replies(int max_count);
 
     LoanedSamples<TRep> take_replies(
         int max_count, 
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     LoanedSamples<TRep> take_replies(
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     inline bool read_reply(Sample<TRep>& reply);
 
@@ -157,20 +157,20 @@ public:
 
     inline bool read_reply(
         Sample<TRep>& reply, 
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     inline bool read_reply(
         SampleRef<TRep> reply, 
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     LoanedSamples<TRep> read_replies(int max_count);
 
     LoanedSamples<TRep> read_replies(
         int max_count, 
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     LoanedSamples<TRep> read_replies(
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     bool receive_nondata_samples(bool enable);
 
@@ -219,30 +219,30 @@ class Replier
     
     void send_reply(
         const TRep & reply,
-        const SampleIdentity_t& related_request_id);
+        const dds::SampleIdentity& related_request_id);
 
     bool receive_request(
         Sample<TReq> & request,
-        const dds::Duration_t & max_wait);
+        const dds::Duration & max_wait);
 
     bool receive_request(
         SampleRef<TReq> request,
-        const dds::Duration_t & max_wait);
+        const dds::Duration & max_wait);
 
     LoanedSamplesType receive_requests(
-        const dds::Duration_t & max_wait);
+        const dds::Duration & max_wait);
 
     LoanedSamplesType receive_requests(
         int min_request_count,
         int max_request_count,
-        const dds::Duration_t& max_wait);
+        const dds::Duration& max_wait);
 
     bool wait_for_requests(
-        const dds::Duration_t & max_wait);
+        const dds::Duration & max_wait);
 
     bool wait_for_requests(
         int min_count, 
-        const dds::Duration_t & max_wait);
+        const dds::Duration & max_wait);
 
     bool take_request(Sample<TReq> & request);
 
@@ -291,7 +291,7 @@ class SimpleReplierListener : public ListenerBase
 {
 public:
   virtual TRep * process_request(const Sample<TReq> &, 
-                                 const SampleIdentity_t &) = 0;
+                                 const dds::SampleIdentity &) = 0;
   virtual ~SimpleReplierListener();
 };
 
@@ -308,7 +308,7 @@ class SimpleRequesterListener : public ListenerBase
 {
 public:
   virtual void process_reply(const Sample<TRep> &, 
-                             const SampleIdentity_t &) = 0;
+                             const dds::SampleIdentity &) = 0;
   virtual ~SimpleRequesterListener();
 };
 

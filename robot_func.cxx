@@ -99,7 +99,7 @@ void server_func(int domainid, const std::string & service_name)
                      dds::rpc::ServiceParams().instance_name("Cool"));
 
     while (true)
-      server.run(dds::Duration_t::from_millis(500));
+      server.run(dds::Duration::from_millis(500));
   }
   catch (std::exception & ex)
   {
@@ -115,7 +115,7 @@ void client_func(int domainid, const std::string & service_name)
     robot::RobotControlSupport::Client robot_client;
     
     robot_client.bind("robot1");
-    NDDSUtility::sleep(dds::Duration_t::from_millis(1000));
+    NDDSUtility::sleep(dds::Duration::from_millis(1000));
 
     float speed = 1;
 
@@ -127,7 +127,7 @@ void client_func(int domainid, const std::string & service_name)
         speed = robot_client.getSpeed();
         printf("getSpeed = %f\n", speed);
         speed *= 2;
-        NDDSUtility::sleep(dds::Duration_t::from_millis(1000));
+        NDDSUtility::sleep(dds::Duration::from_millis(1000));
       }
       catch (robot::TooFast &) {
         speed = 1;

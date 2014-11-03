@@ -225,17 +225,17 @@ public:
   virtual std::vector<std::string> get_discovered_service_instances() const = 0;
 
   virtual void wait_for_service() = 0;
-  virtual void wait_for_service(const dds::Duration_t & maxWait) = 0;
+  virtual void wait_for_service(const dds::Duration & maxWait) = 0;
 
   virtual void wait_for_service(std::string instanceName) = 0;
-  virtual void wait_for_service(const dds::Duration_t & maxWait,
+  virtual void wait_for_service(const dds::Duration & maxWait,
                                 std::string instanceName) = 0;
 
   virtual void wait_for_services(int count) = 0;
-  virtual void wait_for_services(const dds::Duration_t & maxWait, int count) = 0;
+  virtual void wait_for_services(const dds::Duration & maxWait, int count) = 0;
 
   virtual void wait_for_services(const std::vector<std::string> & instanceNames) = 0;
-  virtual void wait_for_services(const dds::Duration_t & maxWait,
+  virtual void wait_for_services(const dds::Duration & maxWait,
                                  const std::vector<std::string> & instanceNames) = 0;
 
   virtual future<void> wait_for_service_async() = 0;
@@ -263,7 +263,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
     long sn;
     bool suppress_invalid;
     std::map<DDS::SampleIdentity_t, promise<Sample<TRep>>> dict;
-    std::map<dds::SampleIdentity_t, DDS::SampleIdentity_t> id2id_map;
+    std::map<dds::SampleIdentity, DDS::SampleIdentity_t> id2id_map;
 
     typedef connext::Requester<TReq, TRep> super;
 
@@ -331,26 +331,26 @@ class RequesterImpl : public details::ServiceProxyImpl,
     void wait_for_service() override
     { } 
     
-    void wait_for_service(const dds::Duration_t & maxWait) override 
+    void wait_for_service(const dds::Duration & maxWait) override 
     { }
 
     void wait_for_service(std::string instanceName) override
     { }
     
-    void wait_for_service(const dds::Duration_t & maxWait,
+    void wait_for_service(const dds::Duration & maxWait,
                           std::string instanceName) override
     { }
 
     void wait_for_services(int count) override
     { }
     
-    void wait_for_services(const dds::Duration_t & maxWait, int count) override
+    void wait_for_services(const dds::Duration & maxWait, int count) override
     { }
 
     void wait_for_services(const std::vector<std::string> & instanceNames) override
     { }
     
-    void wait_for_services(const dds::Duration_t & maxWait,
+    void wait_for_services(const dds::Duration & maxWait,
                            const std::vector<std::string> & instanceNames) override
     { }
 
@@ -408,13 +408,13 @@ class RequesterImpl : public details::ServiceProxyImpl,
 
     bool receive_reply(
       Sample<TRep>& reply,
-      const dds::SampleIdentity_t & relatedRequestId)
+      const dds::SampleIdentity & relatedRequestId)
     {
       if (id2id_map.find(relatedRequestId) != id2id_map.end())
       {
         if (super::wait_for_replies(
                     1,
-                    dds::Duration_t::from_seconds(20)))
+                    dds::Duration::from_seconds(20)))
         {            
           bool ret = super::take_reply(reply, id2id_map[relatedRequestId]);
           if (suppress_invalid && !reply.info().valid_data)
@@ -427,7 +427,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
       }
       else
       {
-        printf("Unknown dds::SampleIdentity_t\n");
+        printf("Unknown dds::SampleIdentity\n");
         return false;
       }
     }
@@ -440,7 +440,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
 
       if (sync->impl->wait_for_replies(
             1,
-            dds::Duration_t::from_seconds(60)))
+            dds::Duration::from_seconds(60)))
       {
         Sample<TRep> reply;
         try {
@@ -578,7 +578,7 @@ class ReplierImpl : public connext::Replier<TReq, TRep>
       super::send_reply(reply, related_request_sample.identity());
     }
     
-    bool receive_request(Sample<TReq> & sample, const dds::Duration_t & timeout)
+    bool receive_request(Sample<TReq> & sample, const dds::Duration & timeout)
     {
       bool ret = super::receive_request(sample, timeout);
       if (suppress_invalid && !sample.info().valid_data)
@@ -667,7 +667,7 @@ void Requester<TReq, TRep>::send_request(TReq & req)
 }
 
 template <typename TReq, typename TRep>
-bool Requester<TReq, TRep>::receive_reply(Sample<TRep> & sample, const DDS_Duration_t & timeout)
+bool Requester<TReq, TRep>::receive_reply(Sample<TRep> & sample, const dds::Duration & timeout)
 {
   auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
   return impl->receive_reply(sample, timeout);
@@ -681,7 +681,7 @@ future<Sample<TRep>> Requester<TReq, TRep>::send_request_async(TReq & req)
 }
 
 template <class TReq, class TRep>
-bool Requester<TReq, TRep>::wait_for_replies(const DDS_Duration_t& max_wait)
+bool Requester<TReq, TRep>::wait_for_replies(const dds::Duration & max_wait)
 {
   auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
   return impl->wait_for_replies(max_wait);
@@ -708,7 +708,7 @@ bool Requester<TReq, TRep>::receive_nondata_samples(bool enable)
 template <class TReq, class TRep>
 bool Requester<TReq, TRep>::receive_reply(
     Sample<TRep>& reply,
-    const dds::SampleIdentity_t & relatedRequestId)
+    const dds::SampleIdentity & relatedRequestId)
 {
   auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
   return impl->receive_reply(reply, relatedRequestId);
@@ -751,7 +751,7 @@ Replier<TReq, TRep>::Replier(const ReplierParams& params)
 { }
 
 template <typename TReq, typename TRep>
-bool Replier<TReq, TRep>::receive_request(Sample<TReq> & sample, const dds::Duration_t & timeout)
+bool Replier<TReq, TRep>::receive_request(Sample<TReq> & sample, const dds::Duration & timeout)
 {
   return impl_->receive_request(sample, timeout);
 }

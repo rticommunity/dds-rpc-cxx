@@ -28,7 +28,7 @@ module dds {
 
 #endif // REDEFINE_DDS_TYPES
 
-struct SampleIdentity_t
+struct SampleIdentity
 {
   GUID_t guid;
   SequenceNumber_t seqNum;
@@ -55,13 +55,13 @@ enum RemoteExceptionCode_t
 
 struct RequestHeader 
 {
-    dds::SampleIdentity_t requestId;
-    string<255> instanceName;
+    dds::SampleIdentity  requestId;
+    string<255>          instanceName;
 };//@top-level false
 
 struct ReplyHeader 
 {
-    dds::SampleIdentity_t           relatedRequestId;
+    dds::SampleIdentity             relatedRequestId;
     dds::rpc::RemoteExceptionCode_t remoteEx;
 };//@top-level false
 

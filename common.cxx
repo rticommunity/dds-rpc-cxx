@@ -12,8 +12,8 @@ bool operator < (
 namespace dds {
 
   bool operator < (
-    const dds::SampleIdentity_t & lhs,
-    const dds::SampleIdentity_t & rhs)
+    const dds::SampleIdentity & lhs,
+    const dds::SampleIdentity & rhs)
   {
     return lhs.seqNum.low < rhs.seqNum.low;
   }

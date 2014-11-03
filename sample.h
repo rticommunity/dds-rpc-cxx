@@ -38,7 +38,7 @@ namespace dds {
 
   class SampleInfo;
   class SampleInfoSeq;
-  class SampleIdentity_t;
+  class SampleIdentity;
 
   template <typename T> 
   struct dds_type_traits
@@ -83,13 +83,13 @@ namespace dds {
 
     Sample(SampleRef<T> sample_ref);
 
-    Sample(const T &data, const SampleInfo& info);
+    Sample(const T &data, const dds::SampleInfo& info);
 
     Sample & operator = (SampleRef<T> sample_ref);
 
-    SampleIdentity_t identity() const;
+    dds::SampleIdentity identity() const;
 
-    SampleIdentity_t related_identity() const;
+    dds::SampleIdentity related_identity() const;
 
     void swap(Sample & other);
 
@@ -138,7 +138,7 @@ namespace dds {
 
     T & data() const;
 
-    SampleInfo & info() const;
+    dds::SampleInfo & info() const;
 
     operator T & () const;
 
@@ -150,9 +150,9 @@ namespace dds {
 
     void set_data(T & data);
 
-    void set_info(SampleInfo * info);
+    void set_info(dds::SampleInfo * info);
 
-    void set_info(SampleInfo & info);
+    void set_info(dds::SampleInfo & info);
 
     bool is_nil_data() const;
 
@@ -160,9 +160,9 @@ namespace dds {
 
     void swap(SampleRef & other) throw();
 
-    SampleIdentity_t identity() const;
+    dds::SampleIdentity identity() const;
 
-    SampleIdentity_t related_identity() const;
+    dds::SampleIdentity related_identity() const;
   };
 
   template <typename T, bool IsConst>
@@ -399,11 +399,11 @@ namespace dds {
 
     void set_data(const T & data);
 
-    void set_identity(const dds::SampleIdentity_t & id);
+    void set_identity(const dds::SampleIdentity & id);
 
     void swap(WriteSample & other) throw();
 
-    dds::SampleIdentity_t identity() const;    
+    dds::SampleIdentity identity() const;    
   };
 
   template <typename T>
@@ -429,11 +429,11 @@ namespace dds {
 
     void set_data(const T & data);
 
-    void set_identity(const dds::SampleIdentity_t & id);
+    void set_identity(const dds::SampleIdentity & id);
 
     void swap(WriteSampleRef & other) throw();
 
-    dds::SampleIdentity_t identity() const;
+    dds::SampleIdentity identity() const;
   };
 
 

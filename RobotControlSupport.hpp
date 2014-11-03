@@ -20,7 +20,7 @@ namespace dds {
         ServiceParams service_params_;
         Replier replier_;
 
-        void dispatch(const dds::Duration_t &);
+        void dispatch(const dds::Duration &);
 
       public:
 
@@ -28,7 +28,7 @@ namespace dds {
         Dispatcher(robot::RobotControl & service_impl,
           const ServiceParams & params);
 
-        virtual void run(const dds::Duration_t &) override;
+        virtual void run(const dds::Duration &) override;
 
       };
 
@@ -51,17 +51,17 @@ namespace dds {
         std::vector<std::string> get_discovered_service_instances() const override;
 
         void wait_for_service() override;
-        void wait_for_service(const dds::Duration_t & maxWait) override;
+        void wait_for_service(const dds::Duration & maxWait) override;
 
         void wait_for_service(std::string instanceName) override;
-        void wait_for_service(const dds::Duration_t & maxWait,
+        void wait_for_service(const dds::Duration & maxWait,
           std::string instanceName) override;
 
         void wait_for_services(int count) override;
-        void wait_for_services(const dds::Duration_t & maxWait, int count) override;
+        void wait_for_services(const dds::Duration & maxWait, int count) override;
 
         void wait_for_services(const std::vector<std::string> & instanceNames) override;
-        void wait_for_services(const dds::Duration_t & maxWait,
+        void wait_for_services(const dds::Duration & maxWait,
           const std::vector<std::string> & instanceNames) override;
 
         future<void> wait_for_service_async() override;

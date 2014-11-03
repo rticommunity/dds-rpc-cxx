@@ -178,7 +178,7 @@ public:
    void run();
 
    // non-blocking
-   void run(const dds::Duration_t & max_wait);
+   void run(const dds::Duration & max_wait);
 
 protected:
   typedef details::vendor_dependent<Server>::type VendorDependent;

@@ -41,10 +41,10 @@ void ServerImpl::register_service(boost::shared_ptr<ServiceEndpointImpl> dispatc
 void ServerImpl::run()
 {
   if (!dispatchers.empty())
-    dispatchers[0]->run(dds::Duration_t::from_millis(500));
+    dispatchers[0]->run(dds::Duration::from_millis(500));
 }
 
-void ServerImpl::run(const dds::Duration_t & timeout)
+void ServerImpl::run(const dds::Duration & timeout)
 {
   if (!dispatchers.empty())
     dispatchers[0]->run(timeout);
@@ -79,7 +79,7 @@ void Server::run()
   impl_->run();
 }
 
-void Server::run(const dds::Duration_t & timeout)
+void Server::run(const dds::Duration & timeout)
 {
   impl_->run(timeout);
 }

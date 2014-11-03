@@ -46,10 +46,11 @@ namespace connext {
 
 namespace dds {
 
-  typedef ::DDS_Duration_t            Duration_t;
-  typedef ::DDS_SampleInfo            SampleInfo;
-  typedef ::DDS_SampleInfoSeq         SampleInfoSeq;  
-  
+  typedef ::DDS_Duration_t     Duration;
+  typedef ::DDS_SampleInfo     SampleInfo;
+  typedef ::DDS_SampleInfoSeq  SampleInfoSeq;  
+
+  using dds::SampleIdentity;
   using connext::Sample;
   using connext::SampleRef;
   using connext::WriteSample;

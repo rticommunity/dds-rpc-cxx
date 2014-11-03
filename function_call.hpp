@@ -11,7 +11,7 @@ class ServiceEndpointImpl
 {
 public:
 
-  virtual void run(const dds::Duration_t &) = 0;
+  virtual void run(const dds::Duration &) = 0;
   virtual ~ServiceEndpointImpl();
 };
 
@@ -31,7 +31,7 @@ public:
 
   void register_service(boost::shared_ptr<ServiceEndpointImpl> dispatcher);
   void run();
-  void run(const dds::Duration_t &);
+  void run(const dds::Duration &);
 };
 class ServiceParamsImpl
 {

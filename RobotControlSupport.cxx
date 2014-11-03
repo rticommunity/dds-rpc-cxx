@@ -195,7 +195,7 @@ namespace dds {
         return reply;
       }
 
-      void Dispatcher<robot::RobotControl>::dispatch(const dds::Duration_t & timeout)
+      void Dispatcher<robot::RobotControl>::dispatch(const dds::Duration & timeout)
       {
         Sample<RequestType> request_sample;
         unique_data<ReplyType> reply;
@@ -222,7 +222,7 @@ namespace dds {
           printf("timeout or invalid sampleinfo. Ignoring...\n");
       }
 
-      void Dispatcher<robot::RobotControl>::run(const dds::Duration_t & timeout)
+      void Dispatcher<robot::RobotControl>::run(const dds::Duration & timeout)
       {
         /*
         if (!replier_.get())
@@ -290,7 +290,7 @@ namespace dds {
       { }
 
       void ClientImpl<robot::RobotControl>::wait_for_service(
-        const dds::Duration_t & maxWait) 
+        const dds::Duration & maxWait) 
       { }
 
       void ClientImpl<robot::RobotControl>::wait_for_service(
@@ -298,7 +298,7 @@ namespace dds {
       { }
 
       void ClientImpl<robot::RobotControl>::wait_for_service(
-        const dds::Duration_t & maxWait,
+        const dds::Duration & maxWait,
         std::string instanceName)
       { }
 
@@ -306,7 +306,7 @@ namespace dds {
       { }
       
       void ClientImpl<robot::RobotControl>::wait_for_services(
-        const dds::Duration_t & maxWait,
+        const dds::Duration & maxWait,
         int count)
       { }
 
@@ -315,7 +315,7 @@ namespace dds {
       { }
       
       void ClientImpl<robot::RobotControl>::wait_for_services(
-        const dds::Duration_t & maxWait,
+        const dds::Duration & maxWait,
         const std::vector<std::string> & instanceNames)
       { }
 

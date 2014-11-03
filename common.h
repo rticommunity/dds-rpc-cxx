@@ -9,11 +9,11 @@ bool operator < (
 
 namespace dds {
 
-  class SampleIdentity_t;
+  class SampleIdentity;
 
   bool operator < (
-    const dds::SampleIdentity_t & lhs,
-    const dds::SampleIdentity_t & rhs);
+    const dds::SampleIdentity & lhs,
+    const dds::SampleIdentity & rhs);
 
 }
 

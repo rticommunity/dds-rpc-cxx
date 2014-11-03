@@ -28,7 +28,7 @@ void client_rr(int domainid, const std::string & service_name)
   Requester<RobotControl_Request, RobotControl_Reply>
     requester(requester_params);
 
-  NDDSUtility::sleep(dds::Duration_t::from_seconds(1));
+  NDDSUtility::sleep(dds::Duration::from_seconds(1));
 
   unique_data<RobotControl_Request> request;
   Sample<RobotControl_Reply> reply_sample;
@@ -191,7 +191,7 @@ void server_rr(int domainid, const std::string & service_name)
     Sample<RobotControl_Request> request_sample;
 
     if (replier.receive_request(request_sample,
-                                dds::Duration_t::from_seconds(60)))
+                                dds::Duration::from_seconds(60)))
     {
       print_request(request_sample.data());
 
