@@ -50,7 +50,8 @@ namespace dds {
   typedef ::DDS_SampleInfo     SampleInfo;
   typedef ::DDS_SampleInfoSeq  SampleInfoSeq;  
 
-  using dds::SampleIdentity;
+  class SampleIdentity;
+
   using connext::Sample;
   using connext::SampleRef;
   using connext::WriteSample;
