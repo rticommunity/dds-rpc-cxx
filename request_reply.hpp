@@ -214,7 +214,15 @@ public:
 
 #endif // USE_PPLTASKS
 
-class ServiceProxyImpl
+class RPCEntityImpl
+{
+public:
+  virtual void close() = 0;
+
+  virtual ~RPCEntityImpl();
+};
+
+class ServiceProxyImpl : public RPCEntityImpl
 {
 public:
 
@@ -243,8 +251,6 @@ public:
   virtual future<void> wait_for_services_async(int count) = 0;
   virtual future<void> wait_for_services_async(
     const std::vector<std::string> & instanceNames) = 0;
-
-  virtual void close() = 0;
 
   virtual ~ServiceProxyImpl();
 };
@@ -499,20 +505,20 @@ class RequesterImpl : public details::ServiceProxyImpl,
       return NULL;
     }
 
-    future<Sample<TRep>> send_request_async(TReq &req)
+    future<Sample<TRep>> send_request_async(const TReq &req)
     {
       struct RTIOsapiThread* tid = 0;
       promise<Sample<TRep>> p;
       future<Sample<TRep>> future = p.get_future();
       DDS::WriteParams_t wparams;
-      WriteSampleRef<TReq> wsref(req, wparams);
+      WriteSampleRef<TReq> wsref(const_cast<TReq &>(req), wparams);
 
       //strcpy(req.header.serviceName, service_name_.c_str());
 
       if (instance_name_.size() > 0)
         strcpy(req.header.instanceName, instance_name_.c_str());
 
-      req.header.requestId.seqNum.low = ++sn;
+      const_cast<TReq &>(req).header.requestId.seqNum.low = ++sn;
 
       super::send_request(wsref);
       SyncProxy * sync = new SyncProxy(this, wsref.identity());
@@ -543,7 +549,8 @@ connext::ReplierParams<TReq, TRep>
 
 
 template <class TReq, class TRep>
-class ReplierImpl : public connext::Replier<TReq, TRep>
+class ReplierImpl : public connext::Replier<TReq, TRep>,
+                    public RPCEntityImpl
 {
   private:
     std::string service_name_;
@@ -593,6 +600,9 @@ class ReplierImpl : public connext::Replier<TReq, TRep>
       suppress_invalid = enable;
       return old; 
     }
+
+    void close()
+    { }
 };
 
 /****************************************************/
@@ -637,10 +647,14 @@ public:
 
 } // namespace details 
 
+template <class Impl>
+RPCEntity::RPCEntity(Impl impl)
+: impl_(impl)
+{}
 
 template <class Impl>
 ServiceProxy::ServiceProxy(Impl impl)
-: impl_(impl)
+: RPCEntity(impl)
 {}
 
 
@@ -674,7 +688,7 @@ bool Requester<TReq, TRep>::receive_reply(Sample<TRep> & sample, const dds::Dura
 }
 
 template <class TReq, class TRep>
-future<Sample<TRep>> Requester<TReq, TRep>::send_request_async(TReq & req)
+future<Sample<TRep>> Requester<TReq, TRep>::send_request_async(const TReq & req)
 {
   auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
   return impl->send_request_async(req);
@@ -742,18 +756,18 @@ Requester<TReq, TRep>::~Requester()
 
 template <typename TReq, typename TRep>
 Replier<TReq, TRep>::Replier()
-: impl_(boost::make_shared<details::ReplierImpl<TReq, TRep>>())
+: RPCEntity(boost::make_shared<details::ReplierImpl<TReq, TRep>>())
 { }
 
 template <typename TReq, typename TRep>
 Replier<TReq, TRep>::Replier(const ReplierParams& params)
-: impl_(boost::make_shared<details::ReplierImpl<TReq, TRep>>(params))
+: RPCEntity(boost::make_shared<details::ReplierImpl<TReq, TRep>>(params))
 { }
 
 template <typename TReq, typename TRep>
 bool Replier<TReq, TRep>::receive_request(Sample<TReq> & sample, const dds::Duration & timeout)
 {
-  return impl_->receive_request(sample, timeout);
+  return static_cast<details::ReplierImpl<TReq, TRep> *>(impl_.get())->receive_request(sample, timeout);
 }
 /*
 template <typename TReq, typename TRep>
@@ -767,7 +781,7 @@ void Replier<TReq, TRep>::send_reply_connext(
 template <typename TReq, typename TRep>
 bool Replier<TReq, TRep>::receive_nondata_samples(bool enable)
 {
-  return impl_->receive_nondata_samples(enable);
+  return static_cast<details::ReplierImpl<TReq, TRep> *>(impl_.get())->receive_nondata_samples(enable);
 }
 
 template <class TReq, class TRep>

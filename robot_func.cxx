@@ -98,6 +98,8 @@ void server_func(int domainid, const std::string & service_name)
                      server, 
                      dds::rpc::ServiceParams().instance_name("Cool"));
 
+    dds::rpc::ServiceEndpoint se = robot_service2;
+
     while (true)
       server.run(dds::Duration::from_millis(500));
   }
@@ -137,6 +139,8 @@ void client_func(int domainid, const std::string & service_name)
     dds::rpc::ClientEndpoint client_endpoint = robot_client;
     auto dw = 
       client_endpoint.get_request_datawriter<robot::RobotControl::RequestType>();
+
+    dds::rpc::ServiceProxy sp = client_endpoint;
 
   }
   catch (std::exception & ex)

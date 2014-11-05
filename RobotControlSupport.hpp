@@ -28,6 +28,7 @@ namespace dds {
         Dispatcher(robot::RobotControl & service_impl,
           const ServiceParams & params);
 
+        virtual void close() override;
         virtual void run(const dds::Duration &) override;
 
       };

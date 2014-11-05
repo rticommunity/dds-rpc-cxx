@@ -15,7 +15,6 @@ namespace robot {
   {
   public:
 
-    typedef RobotControl         InterfaceType;
     typedef RobotControlAsync    AsyncInterfaceType;
     typedef RobotControlSupport  SupportType;
     typedef RobotControl_Request RequestType;

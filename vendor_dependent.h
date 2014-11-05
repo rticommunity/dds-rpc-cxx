@@ -87,6 +87,7 @@ namespace dds {
 
   namespace rpc {
 
+    class RPCEntity;
     class ServiceProxy;
     class RequesterParams;
     class ReplierParams;
@@ -115,6 +116,7 @@ namespace dds {
       class RequesterParamsImpl;
       class ReplierParamsImpl;
       class ServiceProxyImpl;
+      class RPCEntityImpl;
 
       template <class, class>
       class RequesterImpl;
@@ -132,9 +134,9 @@ namespace dds {
       struct vendor_dependent;
 
       template <>
-      struct vendor_dependent<dds::rpc::ServiceProxy>
+      struct vendor_dependent<dds::rpc::RPCEntity>
       {
-        typedef boost::shared_ptr<details::ServiceProxyImpl> type;
+        typedef boost::shared_ptr<details::RPCEntityImpl> type;
       };
 
       template <>

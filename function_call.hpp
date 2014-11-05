@@ -7,7 +7,7 @@ namespace dds {
 template <class Iface>
 class Dispatcher;
 
-class ServiceEndpointImpl
+class ServiceEndpointImpl : public RPCEntityImpl
 {
 public:
 
@@ -15,11 +15,11 @@ public:
   virtual ~ServiceEndpointImpl();
 };
 
-class ServerImpl
+class ServerImpl : public RPCEntityImpl
 {
 public:
 
-  std::vector<boost::shared_ptr<ServiceEndpointImpl>> dispatchers;
+  std::vector<boost::shared_ptr<RPCEntityImpl>> dispatchers;
   DDSDomainParticipant * participant_;
   DDSPublisher * publisher_;
   DDSSubscriber * subscriber_;
@@ -29,10 +29,12 @@ public:
 
   ServerImpl(const ServerParams & server_params);
 
-  void register_service(boost::shared_ptr<ServiceEndpointImpl> dispatcher);
+  void register_service(boost::shared_ptr<RPCEntityImpl> dispatcher);
   void run();
   void run(const dds::Duration &);
+  void close() override;
 };
+
 class ServiceParamsImpl
 {
 private:
@@ -138,7 +140,7 @@ namespace dds {
 
     template <class Impl>
     ServiceEndpoint::ServiceEndpoint(Impl impl)
-      : impl_(impl)
+      : RPCEntity(impl)
     { }
 
     template <class Impl>

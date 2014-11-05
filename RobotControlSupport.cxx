@@ -106,6 +106,9 @@ namespace dds {
           replier_(to_replier_params(service_params_))
       { }
 
+      void Dispatcher<robot::RobotControl>::close()
+      {}
+
       bool is_command(const Sample<robot::RobotControl_Request> & request_sample)
       {
         return request_sample.data().data._d == robot::RobotControl_command_Hash;

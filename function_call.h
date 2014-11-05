@@ -123,12 +123,18 @@ public:
   VendorDependent get_impl() const;
 };
 
-class ServiceEndpoint
+class ServiceEndpoint : public RPCEntity
 {
-public:
+protected:
 
   template <class Impl>
   explicit ServiceEndpoint(Impl impl);
+
+public:
+
+  typedef details::vendor_dependent<ServiceEndpoint>::type VendorDependent;
+  
+  ServiceEndpoint();
 
   template <class TReq>
   typename dds_type_traits<TReq>::DataReader  get_request_datareader() const;
@@ -138,24 +144,24 @@ public:
 
   void pause();
   void resume();
-  void close();
   ServiceStatus status() const;
   ServiceParams get_service_params() const;
 
-protected:
-  typedef details::vendor_dependent<ServiceEndpoint>::type VendorDependent;
-  VendorDependent impl_;
-
-public:
   VendorDependent get_impl() const;
 };
 
 class ClientEndpoint : public ServiceProxy
 {
-public:
+protected:
 
   template <class Impl>
   explicit ClientEndpoint(Impl impl);
+
+public:
+
+  typedef details::vendor_dependent<ServerParams>::type VendorDependent;
+
+  ClientEndpoint();
 
   template <class TReq>
   typename dds_type_traits<TReq>::DataWriter get_request_datawriter() const;
@@ -164,11 +170,16 @@ public:
   typename dds_type_traits<TRep>::DataReader get_reply_datareader() const;
 
   dds::rpc::ClientParams get_client_params();
+
+  VendorDependent get_impl() const;
 };
 
-class Server
+class Server : public RPCEntity
 {
 public:
+
+  typedef details::vendor_dependent<Server>::type VendorDependent;
+
    // may reuse an exising participant
    Server();
 
@@ -180,13 +191,7 @@ public:
    // non-blocking
    void run(const dds::Duration & max_wait);
 
-protected:
-  typedef details::vendor_dependent<Server>::type VendorDependent;
-  VendorDependent impl_;
-
-public:
    VendorDependent get_impl() const;
-
 };
 
 } // namespace rpc

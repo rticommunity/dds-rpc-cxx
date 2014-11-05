@@ -12,29 +12,47 @@
 
 namespace dds { namespace rpc {
 
+  RPCEntity::RPCEntity() 
+  {}
+
+  bool RPCEntity::operator == (const RPCEntity & entity)
+  {
+    return impl_.get() == entity.impl_.get();
+  }
+
+  void RPCEntity::close()
+  {
+    impl_->close();
+  }
+
+  bool RPCEntity::is_null() const
+  {
+    return (impl_.get() == 0);
+  }
+
   void ServiceProxy::bind(const std::string & instance_name)
   {
-    return impl_->bind(instance_name);
+    return static_cast<details::ServiceProxyImpl *>(impl_.get())->bind(instance_name);
   }
 
   void ServiceProxy::unbind()
   {
-    return impl_->unbind();
+    return static_cast<details::ServiceProxyImpl *>(impl_.get())->unbind();
   }
 
   bool ServiceProxy::is_bound() const
   {
-    return impl_->is_bound();
+    return static_cast<const details::ServiceProxyImpl *>(impl_.get())->is_bound();
   }
 
   std::string ServiceProxy::get_bound_instance_name() const
   {
-    return impl_->get_bound_instance_name();
+    return static_cast<const details::ServiceProxyImpl *>(impl_.get())->get_bound_instance_name();
   }
 
   std::vector<std::string> ServiceProxy::get_discoverd_service_instances() const
   {
-    return impl_->get_discovered_service_instances();
+    return static_cast<const details::ServiceProxyImpl *>(impl_.get())->get_discovered_service_instances();
   }
 
   RequesterParams::RequesterParams()
@@ -169,6 +187,9 @@ namespace dds { namespace rpc {
     }
 
     ServiceProxyImpl::~ServiceProxyImpl()
+    { }
+
+    RPCEntityImpl::~RPCEntityImpl()
     { }
 
 } // namespace details

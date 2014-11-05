@@ -10,12 +10,38 @@ namespace dds {
 
 namespace rpc {
 
-class ServiceProxy
+class RPCEntity 
 {
 public:
+  RPCEntity();
+
+  bool operator == (const RPCEntity &);
+  void close();
+  bool is_null() const;
+
+protected:
 
   template <class Impl>
-  ServiceProxy(Impl impl);
+  explicit RPCEntity(Impl impl);
+
+protected:
+  typedef details::vendor_dependent<RPCEntity>::type VendorDependent;
+  VendorDependent impl_;
+
+public:
+  VendorDependent get_impl() const;
+};
+
+class ServiceProxy : public RPCEntity
+{
+protected:
+
+  template <class Impl>
+  explicit ServiceProxy(Impl impl);
+
+public:
+
+  ServiceProxy();
 
   void bind(const std::string & instance_name);
   void unbind();
@@ -41,15 +67,6 @@ public:
   future<void> wait_for_service_async(std::string instanceName);
   future<void> wait_for_services_async(int count);
   future<void> wait_for_services_async(const std::vector<std::string> & instanceNames);
-
-  void close();
-
-protected:
-  typedef details::vendor_dependent<ServiceProxy>::type VendorDependent;
-  VendorDependent impl_;
-
-public:
-  VendorDependent get_impl() const;
 };
 
 
@@ -70,6 +87,8 @@ public:
 
     typedef RequesterParams Params;
 
+    typedef typename details::vendor_dependent<Requester<TReq, TRep>>::type VendorDependent;
+
     Requester();
     
     explicit Requester(const RequesterParams& params);
@@ -82,19 +101,20 @@ public:
 
     virtual ~Requester();
 
+    void send_request(WriteSample<TReq> &request);
+ 
+    void send_request(WriteSampleRef<TReq> & wsref);
+
+    future<dds::Sample<TRep>> send_request_async(const TReq &);
+
 #ifdef OMG_DDS_RPC_BASIC_PROFILE
     void send_request(TReq & request);
     void send_request_oneway(TReq &);
-    future<dds::Sample<TRep>> send_request_async(TReq &);
 #endif 
 
 #ifdef OMG_DDS_RPC_ENHANCED_PROFILE
-    void send_request(WriteSample<TReq> &request)
-    void send_request(WriteSampleRef<TReq> & wsref);
     void send_request(const TReq & request);
     void send_request_oneway(const TReq &);
-
-    future<Sample<TRep>> send_request_async(const TReq &);
 #endif
 
     bool receive_reply(
@@ -180,16 +200,11 @@ public:
 
     ReplyDataReader get_reply_datareader() const;
 
-private:
-    typedef typename details::vendor_dependent<Requester<TReq, TRep>>::type VendorDependent;
-    VendorDependent impl_;
-
-public:
     VendorDependent get_impl();
 };
 
 template <typename TReq, typename TRep>
-class Replier 
+class Replier : public RPCEntity
 {
   public:
 
@@ -205,6 +220,8 @@ class Replier
 
     typedef ReplierParams Params;
 
+    typedef typename details::vendor_dependent<Replier<TReq, TRep>>::type VendorDependent;
+
     Replier();
 
     Replier(const Replier &);
@@ -216,10 +233,26 @@ class Replier
     virtual ~Replier();
 
     void swap(Replier & other);
-    
+
     void send_reply(
-        const TRep & reply,
-        const dds::SampleIdentity& related_request_id);
+      WriteSample<TRep> & reply,
+      const dds::SampleIdentity& related_request_id);
+
+    void send_reply(
+      WriteSampleRef<TRep> & reply,
+      const dds::SampleIdentity& related_request_id);
+
+#ifdef OMG_DDS_RPC_BASIC_PROFILE
+    void send_reply(
+      TRep & reply,
+      const dds::SampleIdentity& related_request_id);
+#endif
+
+#ifdef OMG_DDS_RPC_ENHANCED_PROFILE
+    void send_reply(
+      const TRep & reply,
+      const dds::SampleIdentity& related_request_id);
+#endif
 
     bool receive_request(
         Sample<TReq> & request,
@@ -264,14 +297,7 @@ class Replier
 
     ReplyDataWriter get_reply_datawriter() const;
 
-    void close();
-
-private:
-  typedef typename details::vendor_dependent<Replier<TReq, TRep>>::type VendorDependent;
-  VendorDependent impl_;
-
-public:
-  VendorDependent get_impl();
+    VendorDependent get_impl() const;
 };
 
 template <class TReq, class TRep>

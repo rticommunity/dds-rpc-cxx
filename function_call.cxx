@@ -32,22 +32,25 @@ ServerImpl::ServerImpl(const ServerParams & sp)
       subscriber_(sp.default_service_params().subscriber())
 {}
    
-void ServerImpl::register_service(boost::shared_ptr<ServiceEndpointImpl> dispatcher)
+void ServerImpl::register_service(boost::shared_ptr<RPCEntityImpl> dispatcher)
 {
   dispatchers.push_back(dispatcher);
   printf("register service...\n");
 }
 
+void ServerImpl::close()
+{}
+
 void ServerImpl::run()
 {
   if (!dispatchers.empty())
-    dispatchers[0]->run(dds::Duration::from_millis(500));
+    static_cast<ServerImpl *>(dispatchers[0].get())->run(dds::Duration::from_millis(500));
 }
 
 void ServerImpl::run(const dds::Duration & timeout)
 {
   if (!dispatchers.empty())
-    dispatchers[0]->run(timeout);
+    static_cast<ServerImpl *>(dispatchers[0].get())->run(timeout);
 }
 
 ServiceEndpointImpl::~ServiceEndpointImpl()
@@ -67,26 +70,26 @@ Exception::~Exception() throw()
 {}
 
 Server::Server()
-: impl_(boost::make_shared<details::ServerImpl>())
+: RPCEntity(boost::make_shared<details::ServerImpl>())
 {}
 
 Server::Server(const ServerParams & server_params)
-  : impl_(boost::make_shared<details::ServerImpl>(server_params))
+  : RPCEntity(boost::make_shared<details::ServerImpl>(server_params))
 {}
+
+Server::VendorDependent Server::get_impl() const
+{
+  return boost::dynamic_pointer_cast<details::ServerImpl>(impl_);
+}
 
 void Server::run()
 {
-  impl_->run();
+  static_cast<details::ServerImpl *>(impl_.get())->run();
 }
 
 void Server::run(const dds::Duration & timeout)
 {
-  impl_->run(timeout);
-}
-
-boost::shared_ptr<details::ServerImpl> Server::get_impl() const
-{
-  return impl_;
+  static_cast<details::ServerImpl *>(impl_.get())->run(timeout);
 }
 
 ServerParams::ServerParams()
