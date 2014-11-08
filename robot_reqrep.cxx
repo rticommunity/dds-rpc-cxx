@@ -42,7 +42,7 @@ void client_rr(int domainid, const std::string & service_name)
     requester.send_request(*request);
     requester.receive_reply(reply_sample, request->header.requestId);
     printf("reply received successfully %d\n",
-      i = reply_sample.data().header.relatedRequestId.seqNum.low);
+      i = reply_sample.data().header.relatedRequestId.sequence_number.low);
   }
 
   //while (true)
@@ -53,7 +53,7 @@ void client_rr(int domainid, const std::string & service_name)
     reply_sample = reply_fut.get();
 
     printf("reply received successfully %d\n",
-      i = reply_sample.data().header.relatedRequestId.seqNum.low);
+      i = reply_sample.data().header.relatedRequestId.sequence_number.low);
   }
 
   auto int_lambda = [](future<int> && fint)
@@ -78,7 +78,7 @@ void client_rr(int domainid, const std::string & service_name)
             Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
             printf("reply received successfully %d\n",
-              i = reply_sample.data().header.relatedRequestId.seqNum.low);
+              i = reply_sample.data().header.relatedRequestId.sequence_number.low);
 
             return 888;
           }
@@ -110,7 +110,7 @@ void client_rr(int domainid, const std::string & service_name)
               Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
               printf("reply received successfully %d\n",
-                i = reply_sample.data().header.relatedRequestId.seqNum.low);
+                i = reply_sample.data().header.relatedRequestId.sequence_number.low);
 
               request->data._d = RobotControl_getStatus_Hash;
               return requester.send_request_async(*request);

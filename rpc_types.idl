@@ -30,8 +30,8 @@ module dds {
 
 struct SampleIdentity
 {
-  GUID_t guid;
-  SequenceNumber_t seqNum;
+  GUID_t           writer_guid;
+  SequenceNumber_t sequence_number;
 };//@top-level false
 
 module rpc {
@@ -43,14 +43,11 @@ typedef octet UnusedMember;
 enum RemoteExceptionCode_t
 {
     REMOTE_EX_OK,
-    REMOTE_EX_ERROR,
     REMOTE_EX_UNSUPPORTED,
-    REMOTE_EX_BAD_PARAMETER,
-    REMOTE_EX_PRECONDITION_NOT_MET,
+    REMOTE_EX_INVALID_ARGUMENT,
     REMOTE_EX_OUT_OF_RESOURCES,
-    REMOTE_EX_ILLEGAL_OPERATION,
-    REMOTE_EX_TIMEOUT,
-    REMOTE_EX_UNKNOWN_OPERATION
+    REMOTE_EX_UNKNOWN_OPERATION,
+    REMOTE_EX_UNKNOWN_EXCEPTION
 };
 
 struct RequestHeader 

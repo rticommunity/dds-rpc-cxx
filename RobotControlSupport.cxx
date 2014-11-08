@@ -378,7 +378,7 @@ namespace dds {
         requester_.send_request(*request);
         requester_.receive_reply(reply_sample, request->header.requestId);
         printf("reply received successfully from command %d\n",
-          reply_sample.data().header.relatedRequestId.seqNum.low);
+          reply_sample.data().header.relatedRequestId.sequence_number.low);
       }
 
       float ClientImpl<robot::RobotControl>::setSpeed(float speed)
@@ -395,7 +395,7 @@ namespace dds {
         if (reply_sample.data().data._d == robot::RobotControl_setSpeed_Hash)
         {
           printf("reply received successfully from setSpeed %d\n",
-            reply_sample.data().header.relatedRequestId.seqNum.low);
+            reply_sample.data().header.relatedRequestId.sequence_number.low);
 
           switch (reply_sample.data().data._u.setSpeed._d)
           {
@@ -436,7 +436,7 @@ namespace dds {
         if (reply_sample.data().data._d == robot::RobotControl_getSpeed_Hash)
         {
           printf("reply received successfully from getSpeed %d\n",
-            reply_sample.data().header.relatedRequestId.seqNum.low);
+            reply_sample.data().header.relatedRequestId.sequence_number.low);
 
           switch (reply_sample.data().data._u.getSpeed._d)
           {
@@ -472,7 +472,7 @@ namespace dds {
         if (reply_sample.data().data._d == robot::RobotControl_getStatus_Hash)
         {
           printf("reply received successfully from getStatus %d\n",
-            reply_sample.data().header.relatedRequestId.seqNum.low);
+            reply_sample.data().header.relatedRequestId.sequence_number.low);
 
           switch (reply_sample.data().data._u.getSpeed._d)
           {

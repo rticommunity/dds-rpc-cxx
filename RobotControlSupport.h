@@ -81,6 +81,8 @@ namespace robot {
     {
     public:
 
+      Service();
+
       template <class Impl>
       Service(Impl & impl);
 

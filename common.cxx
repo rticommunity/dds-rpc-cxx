@@ -15,7 +15,7 @@ namespace dds {
     const dds::SampleIdentity & lhs,
     const dds::SampleIdentity & rhs)
   {
-    return lhs.seqNum.low < rhs.seqNum.low;
+    return lhs.sequence_number.low < rhs.sequence_number.low;
   }
 
 }

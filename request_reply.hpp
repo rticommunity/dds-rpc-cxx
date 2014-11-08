@@ -406,7 +406,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
       if(instance_name_.size() > 0)
         strcpy(req.header.instanceName, instance_name_.c_str());
   
-      req.header.requestId.seqNum.low = ++sn;
+      req.header.requestId.sequence_number.low = ++sn;
 
       super::send_request(wsref);
       id2id_map[req.header.requestId] = wsref.identity();
@@ -452,7 +452,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
         try {
           if (sync->impl->take_reply(reply, sync->identity))
           {
-            if ((reply.data().header.relatedRequestId.seqNum.low % 5) == 0)
+            if ((reply.data().header.relatedRequestId.sequence_number.low % 5) == 0)
               throw std::runtime_error("% 5 exception!");
 
             sync->impl->dict[sync->identity].set_value(reply);
@@ -518,7 +518,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
       if (instance_name_.size() > 0)
         strcpy(req.header.instanceName, instance_name_.c_str());
 
-      const_cast<TReq &>(req).header.requestId.seqNum.low = ++sn;
+      const_cast<TReq &>(req).header.requestId.sequence_number.low = ++sn;
 
       super::send_request(wsref);
       SyncProxy * sync = new SyncProxy(this, wsref.identity());
