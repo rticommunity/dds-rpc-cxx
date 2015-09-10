@@ -1,7 +1,7 @@
 #ifndef ROBOTCONTROL_SUPPORT_H
 #define ROBOTCONTROL_SUPPORT_H
 
-#include "function_call.h"
+#include "normative/function_call.h"
 
 #include "robotPlugin.h"
 #include "robotSupport.h"

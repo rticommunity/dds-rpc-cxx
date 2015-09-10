@@ -284,9 +284,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
-    <ClInclude Include="function_call.h" />
     <ClInclude Include="function_call.hpp" />
-    <ClInclude Include="request_reply.h" />
+    <ClInclude Include="normative_api\function_call.h" />
+    <ClInclude Include="normative_api\request_reply.h" />
+    <ClInclude Include="normative_api\sample.h" />
     <ClInclude Include="request_reply.hpp" />
     <ClInclude Include="robot.h" />
     <ClInclude Include="RobotControlSupport.h" />
@@ -296,7 +297,6 @@
     <ClInclude Include="rpc_types.h" />
     <ClInclude Include="rpc_typesPlugin.h" />
     <ClInclude Include="rpc_typesSupport.h" />
-    <ClInclude Include="sample.h" />
     <ClInclude Include="unique_data.h" />
     <ClInclude Include="vendor_dependent.h" />
   </ItemGroup>

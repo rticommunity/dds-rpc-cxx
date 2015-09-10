@@ -1,6 +1,6 @@
 #ifdef USE_RTI_CONNEXT
 
-#include "request_reply.h"
+#include "normative/request_reply.h"
 
 //#include "boost/make_shared.hpp"
 

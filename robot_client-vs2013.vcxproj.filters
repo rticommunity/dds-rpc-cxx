@@ -42,12 +42,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="function_call.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="request_reply.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="robotPlugin.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -61,9 +55,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="rpc_typesSupport.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="sample.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="robot.h">
@@ -90,6 +81,15 @@
     <ClInclude Include="vendor_dependent.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="normative_api\function_call.h">
+      <Filter>normative</Filter>
+    </ClInclude>
+    <ClInclude Include="normative_api\request_reply.h">
+      <Filter>normative</Filter>
+    </ClInclude>
+    <ClInclude Include="normative_api\sample.h">
+      <Filter>normative</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="headers">
@@ -97,6 +97,9 @@
     </Filter>
     <Filter Include="sources">
       <UniqueIdentifier>{a7833d3e-feb2-402f-8e15-77b7e2939b88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="normative">
+      <UniqueIdentifier>{f19e9deb-ce50-4be4-828d-c2c7a0c6c7f0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

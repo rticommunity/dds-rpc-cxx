@@ -1,5 +1,5 @@
 #include "unique_data.h"
-#include "request_reply.h"
+#include "normative/request_reply.h"
 
 namespace dds {
   namespace rpc {

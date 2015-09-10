@@ -129,11 +129,11 @@ namespace dds {
         return request_sample.data().data._d == robot::RobotControl_getStatus_Hash;
       }
 
-      unique_data<robot::RobotControl_Reply> do_command(
+      helper::unique_data<robot::RobotControl_Reply> do_command(
         const Sample<robot::RobotControl_Request> & request_sample,
         robot::RobotControl * service_impl)
       {
-        unique_data<robot::RobotControl_Reply> reply;
+        helper::unique_data<robot::RobotControl_Reply> reply;
 
         service_impl->command(request_sample.data().data._u.command.com);
 
@@ -144,11 +144,11 @@ namespace dds {
         return reply;
       }
 
-      unique_data<robot::RobotControl_Reply> do_setSpeed(
+      helper::unique_data<robot::RobotControl_Reply> do_setSpeed(
         const Sample<robot::RobotControl_Request> & request_sample,
         robot::RobotControl * service_impl)
       {
-        unique_data<robot::RobotControl_Reply> reply;
+        helper::unique_data<robot::RobotControl_Reply> reply;
 
         try
         {
@@ -170,11 +170,11 @@ namespace dds {
         return reply;
       }
 
-      unique_data<robot::RobotControl_Reply> do_getSpeed(
+      helper::unique_data<robot::RobotControl_Reply> do_getSpeed(
         const Sample<robot::RobotControl_Request> & request_sample,
         robot::RobotControl * service_impl)
       {
-        unique_data<robot::RobotControl_Reply> reply;
+        helper::unique_data<robot::RobotControl_Reply> reply;
 
         float speed = service_impl->getSpeed();
 
@@ -185,11 +185,11 @@ namespace dds {
         return reply;
       }
 
-      unique_data<robot::RobotControl_Reply> do_getStatus(
+      helper::unique_data<robot::RobotControl_Reply> do_getStatus(
         const Sample<robot::RobotControl_Request> & request_sample,
         robot::RobotControl * service_impl)
       {
-        unique_data<robot::RobotControl_Reply> reply;
+        helper::unique_data<robot::RobotControl_Reply> reply;
 
         reply->data._d = robot::RobotControl_getStatus_Hash;
         reply->data._u.getStatus._d = dds::rpc::REMOTE_EX_OK;
@@ -201,7 +201,7 @@ namespace dds {
       void Dispatcher<robot::RobotControl>::dispatch(const dds::Duration & timeout)
       {
         Sample<RequestType> request_sample;
-        unique_data<ReplyType> reply;
+        helper::unique_data<ReplyType> reply;
 
         if (replier_.receive_request(request_sample, timeout))
         {
@@ -369,7 +369,7 @@ namespace dds {
 
       void ClientImpl<robot::RobotControl>::command(const robot::Command & command)
       {
-        unique_data<robot::RobotControl_Request> request;
+        helper::unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
         request->data._d = robot::RobotControl_command_Hash;
@@ -383,7 +383,7 @@ namespace dds {
 
       float ClientImpl<robot::RobotControl>::setSpeed(float speed)
       {
-        unique_data<robot::RobotControl_Request> request;
+        helper::unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
         request->data._d = robot::RobotControl_setSpeed_Hash;
@@ -424,7 +424,7 @@ namespace dds {
 
       float ClientImpl<robot::RobotControl>::getSpeed()
       {
-        unique_data<robot::RobotControl_Request> request;
+        helper::unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
         request->data._d = robot::RobotControl_getSpeed_Hash;
@@ -460,7 +460,7 @@ namespace dds {
 
       void ClientImpl<robot::RobotControl>::getStatus(robot::Status & status)
       {
-        unique_data<robot::RobotControl_Request> request;
+        helper::unique_data<robot::RobotControl_Request> request;
         Sample<robot::RobotControl_Reply> reply_sample;
 
         request->data._d = robot::RobotControl_getStatus_Hash;

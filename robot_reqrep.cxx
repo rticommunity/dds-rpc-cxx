@@ -4,16 +4,16 @@
 
 #include "robotSupport.h"
 
-#include "request_reply.h"
+#include "normative/request_reply.h"
 #include "unique_data.h"
 
-using namespace dds;
 using namespace dds::rpc;
 using namespace robot;
+using namespace helper;
 
 void client_rr(int domainid, const std::string & service_name)
 {
-  dds_entity_traits::DomainParticipant participant =
+  dds::dds_entity_traits::DomainParticipant participant =
     TheParticipantFactory->create_participant(
     domainid,
     DDS::PARTICIPANT_QOS_DEFAULT,
@@ -30,8 +30,8 @@ void client_rr(int domainid, const std::string & service_name)
 
   NDDSUtility::sleep(dds::Duration::from_seconds(1));
 
-  unique_data<RobotControl_Request> request;
-  Sample<RobotControl_Reply> reply_sample;
+  helper::unique_data<RobotControl_Request> request;
+  dds::Sample<RobotControl_Reply> reply_sample;
   int i = 0;
 
   //while (true)
@@ -47,7 +47,7 @@ void client_rr(int domainid, const std::string & service_name)
 
   //while (true)
   {
-    future<Sample<RobotControl_Reply>> reply_fut =
+    future<dds::Sample<RobotControl_Reply>> reply_fut =
       requester.send_request_async(*request);
 
     reply_sample = reply_fut.get();
@@ -72,10 +72,10 @@ void client_rr(int domainid, const std::string & service_name)
   {
     requester
       .send_request_async(*request)
-      .then([&](future<Sample<RobotControl_Reply>> && reply_fut)
+      .then([&](future<dds::Sample<RobotControl_Reply>> && reply_fut)
         {
           try {
-            Sample<RobotControl_Reply> reply_sample = reply_fut.get();
+            dds::Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
             printf("reply received successfully %d\n",
               i = reply_sample.data().header.relatedRequestId.sequence_number.low);
@@ -104,10 +104,10 @@ void client_rr(int domainid, const std::string & service_name)
   {
     requester
       .send_request_async(*request)
-      .then([&](future<Sample<RobotControl_Reply>> && reply_fut)
+      .then([&](future<dds::Sample<RobotControl_Reply>> && reply_fut)
           {
             try {
-              Sample<RobotControl_Reply> reply_sample = reply_fut.get();
+              dds::Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
               printf("reply received successfully %d\n",
                 i = reply_sample.data().header.relatedRequestId.sequence_number.low);
@@ -125,10 +125,10 @@ void client_rr(int domainid, const std::string & service_name)
               throw;
             }
           })
-       .then([](future<Sample<RobotControl_Reply>> && reply_fut)
+            .then([](future<dds::Sample<RobotControl_Reply>> && reply_fut)
          {
            try {
-             Sample<RobotControl_Reply> reply_sample = reply_fut.get();
+             dds::Sample<RobotControl_Reply> reply_sample = reply_fut.get();
 
              if (reply_sample.data().data._u.getStatus._d == dds::rpc::REMOTE_EX_OK)
              {
@@ -171,7 +171,7 @@ void print_request(const RobotControl_Request & request)
 
 void server_rr(int domainid, const std::string & service_name)
 {
-  dds_entity_traits::DomainParticipant participant =
+  dds::dds_entity_traits::DomainParticipant participant =
     TheParticipantFactory->create_participant(
     domainid,
     DDS::PARTICIPANT_QOS_DEFAULT,
@@ -188,14 +188,14 @@ void server_rr(int domainid, const std::string & service_name)
 
   while (true)
   {
-    Sample<RobotControl_Request> request_sample;
+    dds::Sample<RobotControl_Request> request_sample;
 
     if (replier.receive_request(request_sample,
                                 dds::Duration::from_seconds(60)))
     {
       print_request(request_sample.data());
 
-      unique_data<RobotControl_Reply> reply;
+      helper::unique_data<RobotControl_Reply> reply;
       reply->data._d = RobotControl_command_Hash;
       reply->data._u.command._d = dds::rpc::REMOTE_EX_OK;
       //reply->data._u.command._u.result.dummy = 0x0;
