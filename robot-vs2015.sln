@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "robot_test", "robot_client-vs2015.vcxproj", "{AF3F3EC2-0479-3DAC-4669-46F09D037425}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug DLL|Win32 = Debug DLL|Win32
+		Debug|Win32 = Debug|Win32
+		Release DLL|Win32 = Release DLL|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Debug DLL|Win32.ActiveCfg = Debug DLL|Win32
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Debug DLL|Win32.Build.0 = Debug DLL|Win32
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Debug|Win32.Build.0 = Debug|Win32
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Release DLL|Win32.ActiveCfg = Release DLL|Win32
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Release DLL|Win32.Build.0 = Release DLL|Win32
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Release|Win32.ActiveCfg = Release|Win32
+		{AF3F3EC2-0479-3DAC-4669-46F09D037425}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
