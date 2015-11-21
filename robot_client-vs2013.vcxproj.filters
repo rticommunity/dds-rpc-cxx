@@ -81,13 +81,13 @@
     <ClInclude Include="vendor_dependent.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="normative_api\function_call.h">
+    <ClInclude Include="normative\function_call.h">
       <Filter>normative</Filter>
     </ClInclude>
-    <ClInclude Include="normative_api\request_reply.h">
+    <ClInclude Include="normative\request_reply.h">
       <Filter>normative</Filter>
     </ClInclude>
-    <ClInclude Include="normative_api\sample.h">
+    <ClInclude Include="normative\sample.h">
       <Filter>normative</Filter>
     </ClInclude>
   </ItemGroup>

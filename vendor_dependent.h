@@ -50,8 +50,6 @@ namespace dds {
   typedef ::DDS_SampleInfo     SampleInfo;
   typedef ::DDS_SampleInfoSeq  SampleInfoSeq;  
 
-  class SampleIdentity;
-
   using connext::Sample;
   using connext::SampleRef;
   using connext::WriteSample;
@@ -202,101 +200,6 @@ namespace dds {
 #include "rpc_types.h"  
 #include "boost/shared_ptr.hpp"
 #include "ndds/ndds_requestreply_cpp.h"
-
-
-#ifdef USE_BOOST_FUTURE
-#define BOOST_THREAD_PROVIDES_FUTURE
-#define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include "boost/thread/future.hpp"
-#endif
-
-#ifdef USE_PPLTASKS
-
-#include <ppltasks.h>
-
-#define BOOST_RESULT_OF_USE_DECLTYPE
-#include "boost/utility/result_of.hpp"
-
-#endif
-
-namespace dds {
-  namespace rpc { 
-
-#ifdef USE_BOOST_FUTURE
-
-// Pull future<T> from boost into this namespace.
-using boost::future;
-
-#endif 
-
-#ifdef USE_PPLTASKS
-
-using concurrency::task;
-
-template <class R>
-class future;
-
-template <class ResultType>
-class shared_future
-{
-  boost::shared_ptr<future<ResultType>> shfut_;
-
-public:
-
-  explicit shared_future(future<ResultType> && fut);
-
-  explicit shared_future(future<ResultType> & fut);
-};
-
-template <class ResultType>
-class future
-{
-  task<ResultType> task_;
-
-public:
-
-  typedef ResultType value_type;
-
-  future();
-  future(future && other);
-  future& operator=(future && other);
-
-  future(const future & rhs) = delete;
-  future& operator=(const future & rhs) = delete;
-
-  task<ResultType> to_task();
-  future(const task<ResultType> & task);
-  future(task<ResultType> && task);
-
-  template<typename F>
-  typename details::Unwrapper<typename boost::result_of<F(future &&)>::type>::return_type
-    then(F&& func);
-
-  template<typename F>
-  typename details::Unwrapper<typename boost::result_of<F(future &&)>::type>::return_type
-    then(const F & func);
-
-  shared_future<ResultType> share();
-  void swap(future& other);
-  ResultType get();
-  bool has_exception() const;
-  bool has_value() const;
-  bool is_ready() const;
-
-  void wait() const;
-
-  template <class Duration>
-  void wait(const Duration &);
-};
-
-
-#endif // USE_PPLTASKS
-
-
-
- } // namespace rpc
-} // namespace dds
-
+#include "future_adapter.hpp"
 
 #endif // VENDOR_DEPENDENT_H

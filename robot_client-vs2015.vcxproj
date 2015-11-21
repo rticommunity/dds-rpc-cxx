@@ -129,8 +129,8 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <PreprocessorDefinitions>USE_AWAIT;OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -143,6 +143,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -287,6 +288,7 @@
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="function_call.hpp" />
+    <ClInclude Include="future_adapter.hpp" />
     <ClInclude Include="normative\function_call.h" />
     <ClInclude Include="normative\request_reply.h" />
     <ClInclude Include="normative\sample.h" />

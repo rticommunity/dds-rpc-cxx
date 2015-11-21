@@ -70,11 +70,11 @@ Exception::~Exception() throw()
 {}
 
 Server::Server()
-: RPCEntity(boost::make_shared<details::ServerImpl>())
+: RPCEntity(boost::make_shared<details::ServerImpl>(), 0)
 {}
 
 Server::Server(const ServerParams & server_params)
-  : RPCEntity(boost::make_shared<details::ServerImpl>(server_params))
+  : RPCEntity(boost::make_shared<details::ServerImpl>(server_params), 0)
 {}
 
 Server::VendorDependent Server::get_impl() const
@@ -233,6 +233,14 @@ ClientParams & ClientParams::operator = (const ClientParams & that)
   impl_ = boost::make_shared<details::ClientParamsImpl>(*that.impl_.get());
   return *this;
 }
+
+ServiceEndpoint::ServiceEndpoint(const ServiceEndpoint & se)
+    : RPCEntity(se)
+{}
+
+ClientEndpoint::ClientEndpoint(const ClientEndpoint & ce)
+    : ServiceProxy(ce)
+{}
 
 
 } // namespace rpc

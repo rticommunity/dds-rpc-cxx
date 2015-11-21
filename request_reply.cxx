@@ -15,6 +15,10 @@ namespace dds { namespace rpc {
   RPCEntity::RPCEntity() 
   {}
 
+  RPCEntity::RPCEntity(const RPCEntity & entity)
+      : impl_(entity.impl_)
+  {}
+
   bool RPCEntity::operator == (const RPCEntity & entity)
   {
     return impl_.get() == entity.impl_.get();
@@ -29,6 +33,10 @@ namespace dds { namespace rpc {
   {
     return (impl_.get() == 0);
   }
+
+  ServiceProxy::ServiceProxy(const ServiceProxy & proxy)
+      : RPCEntity(proxy)
+  {}
 
   void ServiceProxy::bind(const std::string & instance_name)
   {

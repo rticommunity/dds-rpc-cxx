@@ -111,7 +111,7 @@
       <AdditionalDependencies>libboost_thread-vc120-mt-sgd-1_55.lib;rticonnextmsgcppd.lib;nddscppzd.lib;nddsczd.lib;nddscorezd.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\objs\i86Win32vs2013\robot_test.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(BOOSTHOME)\stage\lib;$(NDDSHOME)\lib\i86Win32VS2012;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOSTHOME)\stage\lib;$(NDDSHOME)\lib\i86Win32VS2013;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\objs\i86Win32vs2013\robot_test.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -126,8 +126,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
@@ -147,10 +147,10 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>nddscppd.lib;nddscd.lib;nddscored.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\objs\i86Win32vs2013\robot_client.exe</OutputFile>
+      <AdditionalDependencies>nddscppd.lib;nddscd.lib;rticonnextmsgcpp.lib;nddscored.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\objs\i86Win32vs2013\robot_test.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(NDDSHOME)\lib\i86Win32VS2012;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(NDDSHOME)\lib\i86Win32VS2013;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\objs\i86Win32vs2013\robot_client.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -285,9 +285,9 @@
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="function_call.hpp" />
-    <ClInclude Include="normative_api\function_call.h" />
-    <ClInclude Include="normative_api\request_reply.h" />
-    <ClInclude Include="normative_api\sample.h" />
+    <ClInclude Include="normative\function_call.h" />
+    <ClInclude Include="normative\request_reply.h" />
+    <ClInclude Include="normative\sample.h" />
     <ClInclude Include="request_reply.hpp" />
     <ClInclude Include="robot.h" />
     <ClInclude Include="RobotControlSupport.h" />

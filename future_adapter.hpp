@@ -11,7 +11,12 @@
 
 #include <ppltasks.h>
 
+#ifdef USE_AWAIT
+#include <pplawait.h>
+#endif // USE_AWAIT
+
 #define BOOST_RESULT_OF_USE_DECLTYPE
+
 #include "boost/utility/result_of.hpp"
 
 #endif
@@ -28,6 +33,13 @@ namespace dds {
 
 #ifdef USE_PPLTASKS
 
+        namespace details {
+            
+            template <class R>
+            class promise;
+        
+        } // namespace details
+        
         using concurrency::task;
 
         template <class R>
@@ -52,6 +64,7 @@ namespace dds {
 
         public:
 
+            typedef dds::rpc::details::promise<ResultType> promise_type;
             typedef ResultType value_type;
 
             future();
@@ -126,9 +139,9 @@ namespace rpc {
             typedef future<T> return_type;
 
             template<typename Task, typename F>
-            static return_type unwrap(Task & t, F&& func)
+            static return_type unwrap(Task & task, F&& func)
             {
-                return t.then(std::forward<F>(func));
+                return task.then(std::forward<F>(func));
             }
         };
 
@@ -181,15 +194,14 @@ namespace rpc {
     { }
 
     template<class ResultType>
-    future<ResultType> & future<ResultType>::operator =(future<ResultType> && other)
+    future<ResultType> & future<ResultType>::operator = (future<ResultType> && other)
     {
         task_ = std::move(other.task_);
         return *this;
     }
 
     template<class ResultType>
-    shared_future<ResultType>
-        future<ResultType>::share()
+    shared_future<ResultType> future<ResultType>::share()
     {
         return std::move(*this);
     }
@@ -215,8 +227,8 @@ namespace rpc {
     typename details::Unwrapper<typename boost::result_of<F(future<ResultType> &&)>::type>::return_type
         future<ResultType>::then(F&& func)
     {
-        typedef typename boost::result_of<F(future &&)>::type RetType;
-        return details::Unwrapper<RetType>::unwrap(task_, std::move(func));
+        typedef typename boost::result_of<F(future &&)>::type FRetType;
+        return details::Unwrapper<FRetType>::unwrap(task_, std::move(func));
     }
 
     template<class ResultType>
@@ -224,8 +236,8 @@ namespace rpc {
     typename details::Unwrapper<typename boost::result_of<F(future<ResultType> &&)>::type>::return_type
         future<ResultType>::then(const F & func)
     {
-        typedef typename boost::result_of<F(future &&)>::type RetType;
-        return details::Unwrapper<RetType>::unwrap(task_, func);
+        typedef typename boost::result_of<F(future &&)>::type FRetType;
+        return details::Unwrapper<FRetType>::unwrap(task_, func);
     }
 
     /* // original implementation
@@ -262,6 +274,27 @@ namespace rpc {
         return task_.is_done();
     }
 
+    template <typename T>
+    bool await_ready(future<T> const & t)
+    {
+        return t.is_ready();
+    }
+
+    template <typename T, typename Callback>
+    void await_suspend(future<T> & t, Callback resume)
+    {
+        t.then([resume](future<T> const &)
+        {
+           resume();
+        });
+    }
+    
+    template <typename T>
+    T await_resume(future<T> & t)
+    {
+        return t.get();
+    }
+
 #endif // USE_PPLTASKS
 
     namespace details
@@ -283,21 +316,83 @@ namespace rpc {
 
         public:
 
-            future<ResultType> get_future() const
-            {
+            future<ResultType> get_future() const {
                 return future<ResultType>(task<ResultType>(tce_));
             }
 
-            void set_value(ResultType & result) const
-            {
+            void set_value(ResultType & result) const {
                 tce_.set(result);
             }
 
-            template <class Ex>
-            bool set_exception(Ex ex) const
-            {
-                return tce_.set_exception(ex);
+            bool set_exception(std::exception_ptr exptr) const {
+                return tce_.set_exception(std::move(exptr));
             }
+
+            promise& operator = (promise&& other) {
+                tce_ = std::move(other.tce_);
+                return *this;
+            }
+            promise& operator = (const promise& rhs) = delete;
+
+            void swap(promise & p2) {
+                using std::swap;
+                swap(tce_, p2.tce_);
+            }
+
+            /* await-compatibility functions */
+            future<ResultType> get_return_object() { return get_future(); }
+            bool initial_suspend()                 { return false; }
+            bool final_suspend()                   { return false; }
+            void set_result(ResultType & t) {
+                tce_.set_value(t);
+            }
+            void set_result(ResultType && t) {
+                tce_.set_value(std::move(t));
+            }
+            void return_value(ResultType & t) {
+                tce_.set_value(t);
+            }
+            void return_value(ResultType && t) {
+                tce_.set_value(std::move(t));
+            }
+        };
+
+        template <>
+        class promise <void>
+        {
+            task_completion_event<void> tce_;
+
+        public:
+
+            future<void> get_future() const  {
+                return future<void>(task<void>(tce_));
+            }
+
+            void set_value() const {
+                tce_.set();
+            }
+
+            bool set_exception(std::exception_ptr exptr) const {
+                return tce_.set_exception(std::move(exptr));
+            }
+
+            promise& operator = (promise&& other) {
+                tce_ = std::move(other.tce_);
+                return *this;
+            }
+            promise& operator = (const promise& rhs) = delete;
+
+            void swap(promise & p2) {
+                using std::swap;
+                swap(tce_, p2.tce_);
+            }
+
+            /* await-compatibility functions */
+            future<void> get_return_object() { return get_future(); }
+            bool initial_suspend()           { return false; }
+            bool final_suspend()             { return false; }
+            void set_result()                { set_value(); }
+            void return_void()               { set_value(); }
         };
 
 #endif // USE_PPLTASKS
@@ -305,4 +400,3 @@ namespace rpc {
     } // namespace details
   } // namespace rpc
 } // namespace dds
-

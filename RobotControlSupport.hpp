@@ -126,7 +126,8 @@ namespace robot {
           Impl & impl,
           dds::rpc::Server & server,
           const dds::rpc::ServiceParams & service_params)
-    : ServiceEndpoint(new dds::rpc::details::Dispatcher<RobotControl>(impl, service_params)) // ignored = server, service_params
+    : ServiceEndpoint(new dds::rpc::details::Dispatcher<RobotControl>(impl, service_params), 0) 
+      // ignored = server, service_params
   { 
     server.get_impl()->register_service(impl_);
   }

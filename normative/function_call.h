@@ -128,13 +128,14 @@ class ServiceEndpoint : public RPCEntity
 protected:
 
   template <class Impl>
-  explicit ServiceEndpoint(Impl impl);
+  explicit ServiceEndpoint(Impl impl, int disambiguate);
 
 public:
 
   typedef details::vendor_dependent<ServiceEndpoint>::type VendorDependent;
   
   ServiceEndpoint();
+  ServiceEndpoint(const ServiceEndpoint &);
 
   template <class TReq>
   typename dds_type_traits<TReq>::DataReader  get_request_datareader() const;
@@ -155,13 +156,14 @@ class ClientEndpoint : public ServiceProxy
 protected:
 
   template <class Impl>
-  explicit ClientEndpoint(Impl impl);
+  explicit ClientEndpoint(Impl impl, int disambiguate);
 
 public:
 
   typedef details::vendor_dependent<ServerParams>::type VendorDependent;
 
   ClientEndpoint();
+  ClientEndpoint(const ClientEndpoint &);
 
   template <class TReq>
   typename dds_type_traits<TReq>::DataWriter get_request_datawriter() const;

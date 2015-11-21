@@ -1,7 +1,7 @@
 #ifndef OMG_DDS_RPC_REQUEST_REPLY_H
 #define OMG_DDS_RPC_REQUEST_REPLY_H
 
-#include <string> // platform-specific
+#include <string> 
 
 #include "vendor_dependent.h"
 #include "normative/sample.h"   // standard
@@ -14,6 +14,7 @@ class RPCEntity
 {
 public:
   RPCEntity();
+  RPCEntity(const RPCEntity &);
 
   bool operator == (const RPCEntity &);
   void close();
@@ -22,7 +23,7 @@ public:
 protected:
 
   template <class Impl>
-  explicit RPCEntity(Impl impl);
+  explicit RPCEntity(Impl impl, int disambiguate);
 
 protected:
   typedef details::vendor_dependent<RPCEntity>::type VendorDependent;
@@ -37,11 +38,12 @@ class ServiceProxy : public RPCEntity
 protected:
 
   template <class Impl>
-  explicit ServiceProxy(Impl impl);
+  explicit ServiceProxy(Impl impl, int disambiguate);
 
 public:
 
   ServiceProxy();
+  ServiceProxy(const ServiceProxy &);
 
   void bind(const std::string & instance_name);
   void unbind();
@@ -127,11 +129,13 @@ public:
 
     bool receive_reply(
       Sample<TRep>& reply,
-      const dds::SampleIdentity & relatedRequestId);
+      const dds::SampleIdentity & relatedRequestId,
+      const dds::Duration & timeout);
 
     bool receive_reply(
       SampleRef<TRep> reply,
-      const dds::SampleIdentity & relatedRequestId);
+      const dds::SampleIdentity & relatedRequestId,
+      const dds::Duration & timeout);
 
     LoanedSamples<TRep> receive_replies(const dds::Duration & max_wait);
 

@@ -4,7 +4,7 @@ namespace robot {
 
   RobotControlSupport::Client::Client()
     : dds::rpc::ClientEndpoint(
-        new dds::rpc::details::ClientImpl<robot::RobotControl>())
+        new dds::rpc::details::ClientImpl<robot::RobotControl>(), 0)
   {
       if (!impl_)
         throw std::runtime_error("Could not create robot::RobotControl::Client");
@@ -13,7 +13,7 @@ namespace robot {
   RobotControlSupport::Client::Client(
     const dds::rpc::ClientParams & client_params)
     : dds::rpc::ClientEndpoint(
-        new dds::rpc::details::ClientImpl<robot::RobotControl>(client_params))
+        new dds::rpc::details::ClientImpl<robot::RobotControl>(client_params), 0)
   {
     if (!impl_)
       throw std::runtime_error("Could not create robot::RobotControl::Client");
@@ -376,7 +376,9 @@ namespace dds {
         request->data._u.command.com = command;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, 
+                                 request->header.requestId,
+                                 dds::Duration::from_seconds(20));
         printf("reply received successfully from command %d\n",
           reply_sample.data().header.relatedRequestId.sequence_number.low);
       }
@@ -390,7 +392,9 @@ namespace dds {
         request->data._u.setSpeed.speed = speed;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, 
+                                 request->header.requestId,
+                                 dds::Duration::from_seconds(20));
 
         if (reply_sample.data().data._d == robot::RobotControl_setSpeed_Hash)
         {
@@ -431,7 +435,9 @@ namespace dds {
         request->data._u.getSpeed.dummy = 0;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, 
+                                 request->header.requestId,
+                                 dds::Duration::from_seconds(20));
 
         if (reply_sample.data().data._d == robot::RobotControl_getSpeed_Hash)
         {
@@ -467,7 +473,9 @@ namespace dds {
         request->data._u.getStatus.dummy = 0;
 
         requester_.send_request(*request);
-        requester_.receive_reply(reply_sample, request->header.requestId);
+        requester_.receive_reply(reply_sample, 
+                                 request->header.requestId,
+                                 dds::Duration::from_seconds(20));
 
         if (reply_sample.data().data._d == robot::RobotControl_getStatus_Hash)
         {

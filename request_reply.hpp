@@ -1,218 +1,20 @@
 #ifdef USE_RTI_CONNEXT
 
-#include "common.h"
 #include "connext_cpp/connext_cpp_requester.h"
 #include "connext_cpp/connext_cpp_replier.h"
 #include "boost/make_shared.hpp"
 
 #include <map>
 
+#include "common.h"
+
 #ifdef RTI_WIN32
 #define strcpy(dest, src) strcpy_s(dest, 255, src);
 #endif 
 
-namespace dds { namespace rpc {
-
-#ifdef USE_PPLTASKS
-
-using concurrency::task;
-
-template <class ResultType>
-shared_future<ResultType>::shared_future(future<ResultType> && fut)
-  : shfut_(boost::make_shared<future<ResultType>>(std::move(fut)))
-{}
-
-namespace details
-{
-
-  template <typename RetType>
-  struct Unwrapper
-  {
-    typedef future<RetType> return_type;
-
-    template<typename Task, typename F>
-    static return_type unwrap(Task & task, F&& func)
-    {
-      return task.then(std::forward<F>(func));
-    }
-  };
-
-  template <typename T>
-  struct Unwrapper<task<T>>
-  {
-    typedef future<T> return_type;
-
-    template<typename Task, typename F>
-    static return_type unwrap(Task & t, F&& func)
-    {
-      return t.then(std::forward<F>(func));
-    }
-  };
-
-  template <typename T>
-  struct Unwrapper<future<T>>
-  {
-    typedef future<T> return_type;
-
-    template <typename Func, typename Task>
-    class task_extractor
-    {
-      Func func;
-
-    public:
-      explicit task_extractor(Func && f)
-        : func(std::move(f))
-      {}
-
-      explicit task_extractor(const Func & f)
-        : func(f)
-      {}
-
-      template <class Arg>
-      Task operator ()(Arg&& arg) const {
-        return func(std::forward<Arg>(arg)).to_task();
-      }
-    };
-
-    template<typename Task, typename F>
-    static return_type unwrap(Task & t, F&& func)
-    {
-      return t.then(task_extractor<F, task<T>>(std::forward<F>(func)));
-    }
-  };
-
-} // namespace details
-
-template<class ResultType>
-future<ResultType>::future()
-  : task_() {}
-
-template<class ResultType>
-future<ResultType>::future(future<ResultType> && other)
-  : task_(std::move(other.task_))
-{ }
-
-template<class ResultType>
-future<ResultType> & future<ResultType>::operator =(future<ResultType> && other)
-{
-  task_ = std::move(other.task_);
-  return *this;
-}
-
-template<class ResultType>
-shared_future<ResultType> 
-future<ResultType>::share()
-{
-  return std::move(*this);
-}
-
-template<class ResultType>
-task<ResultType> future<ResultType>::to_task()
-{
-  return std::move(task_);
-}
-
-template<class ResultType>
-future<ResultType>::future(const task<ResultType> & task)
-: task_(task)
-{}
-
-template<class ResultType>
-future<ResultType>::future(task<ResultType> && task)
-: task_(std::move(task))
-{}
-
-template<class ResultType>
-template<typename F>
-typename details::Unwrapper<typename boost::result_of<F(future<ResultType> &&)>::type>::return_type
-future<ResultType>::then(F&& func)
-{
-    typedef typename boost::result_of<F(future &&)>::type RetType;
-    return details::Unwrapper<RetType>::unwrap(task_, std::move(func));
-  }
-
-template<class ResultType>
-template<typename F>
-typename details::Unwrapper<typename boost::result_of<F(future<ResultType> &&)>::type>::return_type
-future<ResultType>::then(const F & func)
-{
-    typedef typename boost::result_of<F(future &&)>::type RetType;
-    return details::Unwrapper<RetType>::unwrap(task_, func);
-  }
-
-/* // original implementation
-template<typename F>
-future<typename boost::result_of<F(future &&)>::type>
-then(const F & func)
-{
-return task_.then(func);
-}
-*/
-
-template<class ResultType>
-void future<ResultType>::swap(future& other)
-{
-  using std::swap;
-  swap(task_, other.task_);
-}
-
-template<class ResultType>
-ResultType future<ResultType>::get()
-{
-  return task_.get();
-}
-
-template<class ResultType>
-void future<ResultType>::wait() const
-{
-  task_.wait();
-}
-
-template<class ResultType>
-bool future<ResultType>::is_ready() const
-{
-  return task_.is_done();
-}
-
-#endif // USE_PPLTASKS
-
-namespace details 
-{
-#ifdef USE_BOOST_FUTURE
-
-using boost::promise;
-
-#endif
-
-#ifdef USE_PPLTASKS
-
-using concurrency::task_completion_event;
-
-template <class ResultType>
-class promise 
-{
-  task_completion_event<ResultType> tce_;
-
-public:
-
-  future<ResultType> get_future() const
-  {
-    return future<ResultType>(task<ResultType>(tce_));
-  }
-
-  void set_value(ResultType & result) const
-  {
-    tce_.set(result);
-  }
-
-  template <class Ex>
-  bool set_exception(Ex ex) const
-  {
-    return tce_.set_exception(ex);
-  }
-};
-
-#endif // USE_PPLTASKS
+namespace dds { 
+namespace rpc {
+namespace details {
 
 class RPCEntityImpl
 {
@@ -414,13 +216,12 @@ class RequesterImpl : public details::ServiceProxyImpl,
 
     bool receive_reply(
       Sample<TRep>& reply,
-      const dds::SampleIdentity & relatedRequestId)
+      const dds::SampleIdentity & relatedRequestId,
+      const dds::Duration & timeout)
     {
       if (id2id_map.find(relatedRequestId) != id2id_map.end())
       {
-        if (super::wait_for_replies(
-                    1,
-                    dds::Duration::from_seconds(20)))
+        if (super::wait_for_replies(1, timeout))
         {            
           bool ret = super::take_reply(reply, id2id_map[relatedRequestId]);
           if (suppress_invalid && !reply.info().valid_data)
@@ -445,56 +246,28 @@ class RequesterImpl : public details::ServiceProxyImpl,
       std::unique_ptr<SyncProxy> sync(static_cast<SyncProxy *>(arg));
 
       if (sync->impl->wait_for_replies(
-            1,
-            dds::Duration::from_seconds(60)))
+            1, dds::Duration::from_seconds(60), sync->identity))
       {
-        Sample<TRep> reply;
         try {
+          Sample<TRep> reply;
+
           if (sync->impl->take_reply(reply, sync->identity))
           {
-            if ((reply.data().header.relatedRequestId.sequence_number.low % 5) == 0)
-              throw std::runtime_error("% 5 exception!");
+            if ((reply.data().header.relatedRequestId.sequence_number.low % 10) == 0)
+              throw std::runtime_error("% 10 exception!");
 
             sync->impl->dict[sync->identity].set_value(reply);
           }
           else
-            printf("Reply unavailable\n");
+          {
+              sync->impl->dict[sync->identity].
+                set_exception(
+                  std::make_exception_ptr(
+                    std::runtime_error("RequesterImpl::execute: Reply unavailable!")));
+          }
         }
-        catch (connext::UnsupportedException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::BadParameterException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::PreconditionNotMetException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::ImmutablePolicyException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::InconsistentPolicyException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::NotEnabledException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::AlreadyDeletedException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::IllegalOperationException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::TimeoutException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (connext::OutOfResourcesException & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (std::runtime_error & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
-        }
-        catch (std::exception & ex) {
-          sync->impl->dict[sync->identity].set_exception(ex);
+        catch (...) {
+          sync->impl->dict[sync->identity].set_exception(std::current_exception());
         }
         sync->impl->dict.erase(sync->identity);
       }
@@ -505,11 +278,11 @@ class RequesterImpl : public details::ServiceProxyImpl,
       return NULL;
     }
 
-    future<Sample<TRep>> send_request_async(const TReq &req)
+    dds::rpc::future<Sample<TRep>> send_request_async(const TReq &req)
     {
       struct RTIOsapiThread* tid = 0;
       promise<Sample<TRep>> p;
-      future<Sample<TRep>> future = p.get_future();
+      dds::rpc::future<Sample<TRep>> future = p.get_future();
       DDS::WriteParams_t wparams;
       WriteSampleRef<TReq> wsref(const_cast<TReq &>(req), wparams);
 
@@ -576,6 +349,7 @@ class ReplierImpl : public connext::Replier<TReq, TRep>,
       service_name_ = params.service_name();
     }
 
+	/*
     void send_reply_connext(
         TRep & reply,
         const Sample<TReq> & related_request_sample)
@@ -584,7 +358,19 @@ class ReplierImpl : public connext::Replier<TReq, TRep>,
         related_request_sample.data().header.requestId;
       super::send_reply(reply, related_request_sample.identity());
     }
-    
+    */
+
+	void send_reply(
+		TRep & reply,
+		const dds::SampleIdentity & identity)
+	{
+		DDS::SampleIdentity_t connext_identity;
+		memcpy(&connext_identity, &identity, sizeof(DDS::SampleIdentity_t));
+		reply.header.relatedRequestId = identity;
+		reply.header.remoteEx = REMOTE_EX_OK;
+		super::send_reply(reply, connext_identity);
+	}
+
     bool receive_request(Sample<TReq> & sample, const dds::Duration & timeout)
     {
       bool ret = super::receive_request(sample, timeout);
@@ -648,15 +434,14 @@ public:
 } // namespace details 
 
 template <class Impl>
-RPCEntity::RPCEntity(Impl impl)
+RPCEntity::RPCEntity(Impl impl, int)
 : impl_(impl)
 {}
 
 template <class Impl>
-ServiceProxy::ServiceProxy(Impl impl)
-: RPCEntity(impl)
+ServiceProxy::ServiceProxy(Impl impl, int)
+ : RPCEntity(impl, 0)
 {}
-
 
 /****************************************************/
 /************** Requester ***************************/
@@ -670,7 +455,12 @@ Requester<TReq, TRep>::Requester()
 
 template <typename TReq, typename TRep>
 Requester<TReq, TRep>::Requester(const RequesterParams& params)
-: ServiceProxy(new details::RequesterImpl<TReq, TRep>(params))
+: ServiceProxy(new details::RequesterImpl<TReq, TRep>(params), 0)
+{ }
+
+template <typename TReq, typename TRep>
+Requester<TReq, TRep>::Requester(const Requester & requester)
+    : ServiceProxy(requester)
 { }
 
 template <typename TReq, typename TRep>
@@ -722,10 +512,11 @@ bool Requester<TReq, TRep>::receive_nondata_samples(bool enable)
 template <class TReq, class TRep>
 bool Requester<TReq, TRep>::receive_reply(
     Sample<TRep>& reply,
-    const dds::SampleIdentity & relatedRequestId)
+    const dds::SampleIdentity & relatedRequestId, 
+    const dds::Duration & timeout)
 {
   auto impl = static_cast<details::RequesterImpl<TReq, TRep> *>(impl_.get());
-  return impl->receive_reply(reply, relatedRequestId);
+  return impl->receive_reply(reply, relatedRequestId, timeout);
 }
 
 template <class TReq, class TRep>
@@ -756,12 +547,12 @@ Requester<TReq, TRep>::~Requester()
 
 template <typename TReq, typename TRep>
 Replier<TReq, TRep>::Replier()
-: RPCEntity(boost::make_shared<details::ReplierImpl<TReq, TRep>>())
+: RPCEntity(boost::make_shared<details::ReplierImpl<TReq, TRep>>(), 0)
 { }
 
 template <typename TReq, typename TRep>
 Replier<TReq, TRep>::Replier(const ReplierParams& params)
-: RPCEntity(boost::make_shared<details::ReplierImpl<TReq, TRep>>(params))
+: RPCEntity(boost::make_shared<details::ReplierImpl<TReq, TRep>>(params), 0)
 { }
 
 template <typename TReq, typename TRep>
@@ -778,6 +569,15 @@ void Replier<TReq, TRep>::send_reply_connext(
   impl_->send_reply_connext(reply, related_request_sample);
 }
 */
+
+template <typename TReq, typename TRep>
+void Replier<TReq, TRep>::send_reply(
+	TRep & reply,
+	const dds::SampleIdentity & identity)
+{
+	static_cast<details::ReplierImpl<TReq, TRep> *>(impl_.get())->send_reply(reply, identity);
+}
+
 template <typename TReq, typename TRep>
 bool Replier<TReq, TRep>::receive_nondata_samples(bool enable)
 {

@@ -139,13 +139,13 @@ namespace dds {
   namespace rpc {
 
     template <class Impl>
-    ServiceEndpoint::ServiceEndpoint(Impl impl)
-      : RPCEntity(impl)
+    ServiceEndpoint::ServiceEndpoint(Impl impl, int)
+      : RPCEntity(impl, 0)
     { }
 
     template <class Impl>
-    ClientEndpoint::ClientEndpoint(Impl impl)
-      : ServiceProxy(impl)
+    ClientEndpoint::ClientEndpoint(Impl impl, int)
+      : ServiceProxy(impl, 0)
     { }
 
     template <class TReq>
