@@ -360,7 +360,7 @@ public:
 		    case RobotControl_getStatus_Hash:
 			    reply->data._d = RobotControl_getStatus_Hash;
 			    reply->data._u.getStatus._d = RETCODE_OK;
-			    reply->data._u.getStatus._u.result.status.msg = _strdup("Good Status");
+			    strcpy(reply->data._u.getStatus._u.result.status.msg, "Good Status");
 			    break;
 		}
 
