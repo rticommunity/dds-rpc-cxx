@@ -5,11 +5,13 @@
 
 #include <ndds/ndds_cpp.h>
 
-void client_rr(int domainid, const std::string & service_name);
-void server_rr(int domainid, const std::string & service_name);
+#include "common.h"
 
-void client_func(int domainid, const std::string & service_name);
-void server_func(int domainid, const std::string & service_name);
+void client_rr(const std::string & service_name);
+void server_rr(const std::string & service_name);
+
+void client_func(const std::string & service_name);
+void server_func(const std::string & service_name);
 
 void usage()
 {
@@ -18,31 +20,43 @@ void usage()
 
 int main(int argc, char *argv[])
 {
-  int domainid = 65;
-  std::string service_name = "RobotControl";
-  
-  /*NDDSConfigLogger::get_instance()->set_verbosity_by_category(
-	  NDDS_CONFIG_LOG_CATEGORY_API,
-	  NDDS_CONFIG_LOG_VERBOSITY_STATUS_ALL);
-  */
+    try {
+        int domainid = 65;
+        std::string service_name = "RobotControl";
 
-  if (argc == 3)
-  {
-    domainid = atoi(argv[1]);
+        /*NDDSConfigLogger::get_instance()->set_verbosity_by_category(
+          NDDS_CONFIG_LOG_CATEGORY_API,
+          NDDS_CONFIG_LOG_VERBOSITY_STATUS_ALL);
+        */
 
-    if (strcmp(argv[2], "client_rr") == 0)
-      client_rr(domainid, service_name);
-    else if (strcmp(argv[2], "server_rr") == 0)
-      server_rr(domainid, service_name);
-    else if (strcmp(argv[2], "client_func") == 0)
-      client_func(domainid, service_name);
-    else if (strcmp(argv[2], "server_func") == 0)
-      server_func(domainid, service_name);
-    else
-      usage();
-  }
-  else
-    usage();
-  
-  return 0;
+        if (argc == 3)
+        {
+            domainid = atoi(argv[1]);
+            DDSDomainParticipant * default_participant = 
+              dds::rpc::details::DefaultDomainParticipant::singleton().set_domainid(domainid).get();
+
+            if (strcmp(argv[2], "client_rr") == 0)
+                client_rr(service_name);
+            else if (strcmp(argv[2], "server_rr") == 0)
+                server_rr(service_name);
+            else if (strcmp(argv[2], "client_func") == 0)
+                client_func(service_name);
+            else if (strcmp(argv[2], "server_func") == 0)
+                server_func(service_name);
+            else
+                usage();
+        }
+        else
+            usage();
+
+        return 0;
+    }
+    catch (std::exception & ex)
+    {
+        printf("Exception in main: %s\n", ex.what());
+    }
+    catch (...)
+    {
+        printf("Unknown exception in main\n");
+    }
 }

@@ -37,6 +37,9 @@ public:
 class ServiceParams
 {
 public:
+  /* DomainParticipant argument is optional. When it's not provided, either lookup
+    a default DomainParticipant or create one. 
+  */
   ServiceParams();
   ServiceParams(const ServiceParams & other);
   ServiceParams & operator = (const ServiceParams & that);
@@ -72,6 +75,9 @@ public:
 class ClientParams
 {
 public:
+  /* DomainParticipant argument is optional. When it's not provided, either lookup
+       a default DomainParticipant or create one.
+  */
   ClientParams();
   ClientParams(const ClientParams & other);
   ClientParams & operator = (const ClientParams & that);

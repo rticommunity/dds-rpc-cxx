@@ -189,8 +189,11 @@ namespace dds { namespace rpc {
     connext::RequesterParams
       to_connext_requester_params(const dds::rpc::RequesterParams & params)
     {
-        return connext::RequesterParams(
-                    params.domain_participant())
+      DDSDomainParticipant * part = params.domain_participant();
+      if(!part)
+        part = dds::rpc::details::DefaultDomainParticipant::singleton().get();
+
+      return connext::RequesterParams(part)
               .service_name(params.service_name());
     }
 

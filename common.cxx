@@ -18,4 +18,38 @@ namespace dds {
     return lhs.sequence_number.low < rhs.sequence_number.low;
   }
 
+  namespace rpc {
+
+    namespace details {
+
+      DefaultDomainParticipant::DefaultDomainParticipant()
+        : domainid(0),
+          participant(0)
+      { }
+
+      DefaultDomainParticipant & DefaultDomainParticipant::singleton()
+      {
+        static DefaultDomainParticipant default_participant;
+        return default_participant;
+      }
+
+      DefaultDomainParticipant & DefaultDomainParticipant::set_domainid(int domainid)
+      {
+        this->domainid = domainid;
+        return *this;
+      }
+
+      DDSDomainParticipant* DefaultDomainParticipant::get()
+      {
+        if(!participant)
+          participant = TheParticipantFactory->create_participant(
+                          domainid,
+                          DDS::PARTICIPANT_QOS_DEFAULT,
+                          NULL /* listener */,
+                          DDS::STATUS_MASK_NONE);
+
+        return participant;
+      }
+    }
+  }
 }

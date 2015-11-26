@@ -77,7 +77,7 @@ public:
   }
 };
 
-void server_func(int domainid, const std::string & service_name)
+void server_func(const std::string & service_name)
 {
   try {
     boost::shared_ptr<MyRobot> myrobot1 =
@@ -89,19 +89,14 @@ void server_func(int domainid, const std::string & service_name)
     dds::rpc::Server server;
 
     RobotControlSupport::Service 
-      robot_service1(*myrobot1, 
-                     server, 
-                     dds::rpc::ServiceParams().instance_name("Rock"));
+      robot_service(*myrobot1, 
+                    server, 
+                    dds::rpc::ServiceParams().service_name(service_name).instance_name("Rock"));
     
-    RobotControlSupport::Service 
-      robot_service2(*myrobot2, 
-                     server, 
-                     dds::rpc::ServiceParams().instance_name("Cool"));
-
-    dds::rpc::ServiceEndpoint se = robot_service2;
+    dds::rpc::ServiceEndpoint se = robot_service;
 
     while (true)
-      server.run(dds::Duration::from_millis(500));
+      server.run(dds::Duration::from_seconds(20));
   }
   catch (std::exception & ex)
   {
@@ -110,20 +105,57 @@ void server_func(int domainid, const std::string & service_name)
 
 }
 
+template <class T>
+T & remove_const(const T & t)
+{
+  return const_cast<T &>(t);
+}
 
-void client_func(int domainid, const std::string & service_name)
+void test_asynchronous(robot::RobotControlSupport::Client & robot_client)
 {
   try {
-    robot::RobotControlSupport::Client robot_client;
-    
-    robot_client.bind("robot1");
-    NDDSUtility::sleep(dds::Duration::from_millis(1000));
 
+    for (int i = 0; i < 10; i++)
+    {
+      robot_client
+        .getSpeed_async()
+        .then([robot_client](future<float> && speed_fut) {
+              float speed = speed_fut.get();
+              printf("test_asynchronous: getSpeed = %f\n", speed);
+              speed *= 2;
+              return remove_const(robot_client).setSpeed_async(speed);
+          })
+        .then([](future<float> && speed_fut) {
+            try {
+              float speed = speed_fut.get();
+            }
+            catch (TooFast &)
+            {
+              printf("test_asynchronous: Going too fast!\n");
+            }
+          });
+
+      NDDSUtility::sleep(dds::Duration::from_millis(1000));
+    }
+  }
+  catch (std::exception & ex)
+  {
+    printf("Exception in client_func: %s\n", ex.what());
+  }
+  catch (...)
+  {
+    printf("test_asynchronous: Unknown exception\n");
+  }
+}
+
+void test_synchronous(robot::RobotControlSupport::Client & robot_client)
+{
+  try {
     float speed = 1;
 
-    while (true)
+    for (int i = 0; i < 10; i++)
     {
-      try 
+      try
       {
         robot_client.setSpeed(speed);
         speed = robot_client.getSpeed();
@@ -135,16 +167,56 @@ void client_func(int domainid, const std::string & service_name)
         speed = 1;
       }
     }
-
-    dds::rpc::ClientEndpoint client_endpoint = robot_client;
-    auto dw = 
-      client_endpoint.get_request_datawriter<robot::RobotControl::RequestType>();
-
-    dds::rpc::ServiceProxy sp = client_endpoint;
-
   }
   catch (std::exception & ex)
   {
     printf("Exception in client_func: %s\n", ex.what());
   }
 }
+
+void test_conversions(robot::RobotControlSupport::Client & robot_client)
+{
+  dds::rpc::ClientEndpoint client_endpoint = robot_client;
+  auto dw =
+    client_endpoint.get_request_datawriter<robot::RobotControl::RequestType>();
+
+  dds::rpc::ServiceProxy sp = client_endpoint;
+
+  robot_client.bind("robot1");
+}
+
+#ifdef USE_AWAIT
+
+future<void> test_await(robot::RobotControlSupport::Client & robot_client)
+{
+  robot_client.setSpeed_async(1);
+
+  for (int i = 0; i < 10; i++)
+  {
+    float speed = await robot_client.getSpeed_async();
+    float oldspeed = await robot_client.setSpeed_async(speed + 2);
+    assert(speed == oldspeed);
+    printf("test_await: old speed = %f", oldspeed);
+  }
+}
+
+#endif // USE_AWAIT
+
+void client_func(const std::string & service_name)
+{
+  robot::RobotControlSupport::Client robot_client;
+
+  NDDSUtility::sleep(dds::Duration::from_millis(1000));
+
+  test_conversions(robot_client);
+  test_synchronous(robot_client);
+  test_asynchronous(robot_client);
+
+#ifdef USE_AWAIT
+  test_await(robot_client).get();
+#endif 
+
+  printf("Press ENTER to end the program.\n");
+  getchar();
+}
+

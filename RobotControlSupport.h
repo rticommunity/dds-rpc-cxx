@@ -81,8 +81,10 @@ namespace robot {
     {
     public:
 
+      // Normative: Uses default Server
       Service();
 
+      // Normative: Uses default Server
       template <class Impl>
       Service(Impl & impl);
 
@@ -91,8 +93,8 @@ namespace robot {
 
       template <class Impl>
       Service(Impl & impl,
-        dds::rpc::Server & server,
-        const dds::rpc::ServiceParams & service_params);
+              dds::rpc::Server & server,
+              const dds::rpc::ServiceParams & service_params);
 
     };
 

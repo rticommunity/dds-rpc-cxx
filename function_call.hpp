@@ -11,7 +11,7 @@ class ServiceEndpointImpl : public RPCEntityImpl
 {
 public:
 
-  virtual void run(const dds::Duration &) = 0;
+  virtual void run_impl(const dds::Duration &) = 0;
   virtual ~ServiceEndpointImpl();
 };
 
@@ -21,8 +21,6 @@ public:
 
   std::vector<boost::shared_ptr<RPCEntityImpl>> dispatchers;
   DDSDomainParticipant * participant_;
-  DDSPublisher * publisher_;
-  DDSSubscriber * subscriber_;
 
 public:
   ServerImpl();
@@ -62,10 +60,10 @@ public:
   void subscriber(DDSSubscriber *subscriber);
   void domain_participant(DDSDomainParticipant *part);
 
-  std::string service_name() const;
-  std::string instance_name() const;
-  std::string request_topic_name() const;
-  std::string reply_topic_name() const;
+  const std::string & service_name() const;
+  const std::string & instance_name() const;
+  const std::string & request_topic_name() const;
+  const std::string & reply_topic_name() const;
   dds_entity_traits::DataWriterQos datawriter_qos() const;
   dds_entity_traits::DataReaderQos datareader_qos() const;
   DDSPublisher * publisher() const;
@@ -75,6 +73,7 @@ public:
 
 class ClientParamsImpl : public ServiceParamsImpl
 {
+
 public:
   ClientParamsImpl();
 };

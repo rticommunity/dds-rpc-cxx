@@ -241,7 +241,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
 
     static void * execute(void * arg)
     {
-      //printf("Created thread = %d\n", RTIOsapiThread_getCurrentThreadID());
+      printf("Created thread = %lld\n", RTIOsapiThread_getCurrentThreadID());
       
       std::unique_ptr<SyncProxy> sync(static_cast<SyncProxy *>(arg));
 
@@ -253,8 +253,8 @@ class RequesterImpl : public details::ServiceProxyImpl,
 
           if (sync->impl->take_reply(reply, sync->identity))
           {
-            if ((reply.data().header.relatedRequestId.sequence_number.low % 10) == 0)
-              throw std::runtime_error("% 10 exception!");
+            //if ((reply.data().header.relatedRequestId.sequence_number.low % 10) == 0)
+            //  throw std::runtime_error("% 10 exception!");
 
             sync->impl->dict[sync->identity].set_value(reply);
           }
@@ -315,8 +315,11 @@ template <class TReq, class TRep>
 connext::ReplierParams<TReq, TRep>
   to_connext_replier_params(const rpc::ReplierParams & replier_params)
 {
-    return connext::ReplierParams<TReq, TRep>(
-            replier_params.domain_participant())
+  DDSDomainParticipant * part = replier_params.domain_participant();
+  if (!part)
+    part = dds::rpc::details::DefaultDomainParticipant::singleton().get();
+
+  return connext::ReplierParams<TReq, TRep>(part)
             .service_name(replier_params.service_name());
 }
 
@@ -450,12 +453,12 @@ ServiceProxy::ServiceProxy(Impl impl, int)
 
 template <typename TReq, typename TRep>
 Requester<TReq, TRep>::Requester()
-: ServiceProxy(new details::RequesterImpl<TReq, TRep>())
+: ServiceProxy(new rpc::details::RequesterImpl<TReq, TRep>())
 { }
 
 template <typename TReq, typename TRep>
 Requester<TReq, TRep>::Requester(const RequesterParams& params)
-: ServiceProxy(new details::RequesterImpl<TReq, TRep>(params), 0)
+: ServiceProxy(new rpc::details::RequesterImpl<TReq, TRep>(params), 0)
 { }
 
 template <typename TReq, typename TRep>

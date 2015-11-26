@@ -1,6 +1,7 @@
 #ifndef OMG_DDS_RPC_COMMON_H
 #define OMG_DDS_RPC_COMMON_H
 
+class DDSDomainParticipant;
 struct DDS_SampleIdentity_t;
 
 bool operator < (
@@ -15,6 +16,24 @@ namespace dds {
     const dds::SampleIdentity & lhs,
     const dds::SampleIdentity & rhs);
 
-}
+  namespace rpc {
+
+    namespace details {
+
+      class DefaultDomainParticipant
+      {
+          int domainid;
+          DDSDomainParticipant* participant;
+          DefaultDomainParticipant();
+
+        public:
+          static DefaultDomainParticipant & singleton();
+          DefaultDomainParticipant & set_domainid(int domainid);
+          DDSDomainParticipant*  get();
+      };
+
+    } // namespace details
+  } // namespace rpc
+} // namespace dds
 
 #endif // OMG_DDS_RPC_COMMON_H

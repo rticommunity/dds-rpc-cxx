@@ -17,7 +17,6 @@ namespace dds {
 
       private:
         robot::RobotControl * robotimpl_;
-        ServiceParams service_params_;
         Replier replier_;
 
         void dispatch(const dds::Duration &);
@@ -26,18 +25,18 @@ namespace dds {
 
         Dispatcher(robot::RobotControl & service_impl);
         Dispatcher(robot::RobotControl & service_impl,
-          const ServiceParams & params);
+                   const ServiceParams & params);
 
         virtual void close() override;
-        virtual void run(const dds::Duration &) override;
+        virtual void run_impl(const dds::Duration &) override;
 
       };
 
       template <>
       class ClientImpl<robot::RobotControl>
         : public ClientEndpointImpl,
-        public robot::RobotControl,
-        public robot::RobotControlAsync
+          public robot::RobotControl,
+          public robot::RobotControlAsync
       {
       public:
 
@@ -116,7 +115,9 @@ namespace robot {
   RobotControlSupport::Service::Service(
         Impl & impl, 
         dds::rpc::Server & server)
-    : ServiceEndpoint(new dds::rpc::details::Dispatcher<RobotControl>(impl)) // ignored = server
+    : ServiceEndpoint(new dds::rpc::details::Dispatcher<RobotControl>(
+                        impl, 
+                        dds::rpc::ServiceParams::service_name("RobotControl")), 0) // ignored = server
   { 
     server.get_impl()->register_service(impl_);
   }
@@ -127,7 +128,6 @@ namespace robot {
           dds::rpc::Server & server,
           const dds::rpc::ServiceParams & service_params)
     : ServiceEndpoint(new dds::rpc::details::Dispatcher<RobotControl>(impl, service_params), 0) 
-      // ignored = server, service_params
   { 
     server.get_impl()->register_service(impl_);
   }

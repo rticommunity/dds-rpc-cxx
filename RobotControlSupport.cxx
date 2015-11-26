@@ -86,24 +86,34 @@ namespace dds {
   namespace rpc {
     namespace details {
 
+      static dds::SampleIdentity to_rpc_sample_identity(const DDS::SampleIdentity_t & inid)
+      {
+        static_assert(sizeof(dds::SampleIdentity) == sizeof(DDS::SampleIdentity_t),
+                      "Sizes of two SampleIdentity don't match!");
+
+        dds::SampleIdentity outid;
+        memcpy(&outid, &inid, sizeof(SampleIdentity_t));
+        return outid;
+      }
+
       rpc::ReplierParams
         to_replier_params(const rpc::ServiceParams & service_params)
       {
-          return rpc::ReplierParams().domain_participant(service_params.domain_participant());
+        return rpc::ReplierParams()
+                 .domain_participant(service_params.domain_participant())
+                 .service_name(service_params.service_name());
       }
 
       Dispatcher<robot::RobotControl>::Dispatcher(robot::RobotControl & service_impl)
         : robotimpl_(&service_impl),
-          service_params_(), // FIXME: default construction
-          replier_(to_replier_params(service_params_))
+          replier_(to_replier_params(ServiceParams().service_name("RobotControl")))
       { }
 
       Dispatcher<robot::RobotControl>::Dispatcher(
             robot::RobotControl & service_impl,
             const ServiceParams & service_params)
         : robotimpl_(&service_impl),
-          service_params_(service_params),
-          replier_(to_replier_params(service_params_))
+          replier_(to_replier_params(service_params))
       { }
 
       void Dispatcher<robot::RobotControl>::close()
@@ -154,7 +164,6 @@ namespace dds {
         {
           float speed =
             service_impl->setSpeed(request_sample.data().data._u.setSpeed.speed);
-          //printf("do_setSpeed = %d\n", request_sample.data().data._u.setSpeed.speed);
 
           reply->data._d = robot::RobotControl_setSpeed_Hash;
           reply->data._u.setSpeed._d = dds::rpc::REMOTE_EX_OK;
@@ -219,25 +228,15 @@ namespace dds {
             reply->data._d = 0; // default
           }
 
-          //FIXME replier_.send_reply_connext(*reply, request_sample);
+          NDDSUtility::sleep(dds::Duration::from_millis(50));
+          replier_.send_reply(*reply, to_rpc_sample_identity(request_sample.identity()));
         }
         else
           printf("timeout or invalid sampleinfo. Ignoring...\n");
       }
 
-      void Dispatcher<robot::RobotControl>::run(const dds::Duration & timeout)
+      void Dispatcher<robot::RobotControl>::run_impl(const dds::Duration & timeout)
       {
-        /*
-        if (!replier_.get())
-        {
-          ServiceParams sp =
-            ServiceEndpointImplDispatcher::get_service_impl()->get_service_params();
-
-          replier_ =
-            boost::make_shared<Replier>(sp.domain_participant(),
-            sp.service_name());
-        }
-        */
         dispatch(timeout);
       }
 
@@ -247,15 +246,16 @@ namespace dds {
 
       static dds::rpc::RequesterParams 
         to_requester_params(const ClientParams & client_params)
-      {
-          return dds::rpc::RequesterParams();
+      {        
+        return dds::rpc::RequesterParams()
+          .domain_participant(client_params.domain_participant())
+          .service_name(client_params.service_name());
       }
 
       ClientImpl<robot::RobotControl>::ClientImpl() 
-        : params_(dds::rpc::ClientParams()),
+        : params_(dds::rpc::ClientParams().service_name("RobotControl")),
           requester_(to_requester_params(params_))
       {  }
-
 
       ClientImpl<robot::RobotControl>::ClientImpl(
         const dds::rpc::ClientParams & client_params)
@@ -506,25 +506,73 @@ namespace dds {
         ClientImpl<robot::RobotControl>::command_async(
           const robot::Command & command)
       {
-          return dds::rpc::future<void>();
+        helper::unique_data<robot::RobotControl_Request> request;
+        Sample<robot::RobotControl_Reply> reply_sample;
+
+        request->data._d = robot::RobotControl_command_Hash;
+        request->data._u.getSpeed.dummy = 0;
+
+        return
+          requester_
+            .send_request_async(*request)
+            .then([](dds::rpc::future <Sample<robot::RobotControl_Reply>> && reply) {
+              reply.get();
+            });
       }
 
       dds::rpc::future<float> 
         ClientImpl<robot::RobotControl>::setSpeed_async(float speed)
       {
-          return dds::rpc::future<float>();
+        helper::unique_data<robot::RobotControl_Request> request;
+        Sample<robot::RobotControl_Reply> reply_sample;
+
+        request->data._d = robot::RobotControl_setSpeed_Hash;
+        request->data._u.setSpeed.speed = speed;
+
+        return
+          requester_
+            .send_request_async(*request)
+            .then([](dds::rpc::future <Sample<robot::RobotControl_Reply>> && reply_fut) {
+                    Sample<robot::RobotControl_Reply> reply_sample = reply_fut.get();
+                    if (reply_sample.data().data._u.setSpeed._d == robot::TooFast_Ex_Hash)
+                    {
+                      throw robot::TooFast();
+                    }
+                    else 
+                      return reply_sample.data().data._u.setSpeed._u.result.return_;
+            });
       }
       
       dds::rpc::future<float> 
         ClientImpl<robot::RobotControl>::getSpeed_async()
       {
-          return dds::rpc::future<float>();
+          helper::unique_data<robot::RobotControl_Request> request;
+          Sample<robot::RobotControl_Reply> reply_sample;
+
+          request->data._d = robot::RobotControl_getSpeed_Hash;
+          request->data._u.getSpeed.dummy = 0;
+
+          return 
+          requester_.send_request_async(*request)
+                    .then([](dds::rpc::future <Sample<robot::RobotControl_Reply>> && reply) {
+                        return reply.get().data().data._u.getSpeed._u.result.return_;
+                    });
       }
 
       dds::rpc::future<robot::RobotControl_getStatus_Out> 
         ClientImpl<robot::RobotControl>::getStatus_async()
       {
-          return dds::rpc::future<robot::RobotControl_getStatus_Out>();
+        helper::unique_data<robot::RobotControl_Request> request;
+        Sample<robot::RobotControl_Reply> reply_sample;
+
+        request->data._d = robot::RobotControl_getStatus_Hash;
+        request->data._u.getSpeed.dummy = 0;
+
+        return
+          requester_.send_request_async(*request)
+            .then([](dds::rpc::future <Sample<robot::RobotControl_Reply>> && reply_fut) {
+              return reply_fut.get().data().data._u.getStatus._u.result;
+            });
       }
 
     } // namespace details

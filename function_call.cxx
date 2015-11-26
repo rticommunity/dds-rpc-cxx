@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "normative/function_call.h"
+#include "common.h"
 #include "boost/make_shared.hpp"
 
 namespace dds {
@@ -11,31 +12,19 @@ namespace rpc {
 namespace details {
 
 ServerImpl::ServerImpl()
-  : participant_(0),
-    publisher_(0),
-    subscriber_(0)
+  : participant_(dds::rpc::details::DefaultDomainParticipant::singleton().get())
 {
-  participant_ =
-    TheParticipantFactory->create_participant(
-    0,
-    DDS::PARTICIPANT_QOS_DEFAULT,
-    NULL /* listener */,
-    DDS::STATUS_MASK_NONE);
-
   if (!participant_)
     throw std::runtime_error("Unable to create participant");
 }
 
 ServerImpl::ServerImpl(const ServerParams & sp)
-    : participant_(sp.default_service_params().domain_participant()),
-      publisher_(sp.default_service_params().publisher()),
-      subscriber_(sp.default_service_params().subscriber())
+    : participant_(sp.default_service_params().domain_participant())
 {}
    
 void ServerImpl::register_service(boost::shared_ptr<RPCEntityImpl> dispatcher)
 {
   dispatchers.push_back(dispatcher);
-  printf("register service...\n");
 }
 
 void ServerImpl::close()
@@ -43,14 +32,14 @@ void ServerImpl::close()
 
 void ServerImpl::run()
 {
-  if (!dispatchers.empty())
-    static_cast<ServerImpl *>(dispatchers[0].get())->run(dds::Duration::from_millis(500));
+  for (int i = 0; i < dispatchers.size(); i++)
+    static_cast<ServiceEndpointImpl *>(dispatchers[i].get())->run_impl(dds::Duration::from_seconds(20));
 }
 
 void ServerImpl::run(const dds::Duration & timeout)
 {
-  if (!dispatchers.empty())
-    static_cast<ServerImpl *>(dispatchers[0].get())->run(timeout);
+  for (int i = 0; i < dispatchers.size(); i++)
+    static_cast<ServiceEndpointImpl *>(dispatchers[i].get())->run_impl(timeout);
 }
 
 ServiceEndpointImpl::~ServiceEndpointImpl()
@@ -84,12 +73,12 @@ Server::VendorDependent Server::get_impl() const
 
 void Server::run()
 {
-  static_cast<details::ServerImpl *>(impl_.get())->run();
+  dynamic_cast<details::ServerImpl *>(impl_.get())->run();
 }
 
 void Server::run(const dds::Duration & timeout)
 {
-  static_cast<details::ServerImpl *>(impl_.get())->run(timeout);
+  dynamic_cast<details::ServerImpl *>(impl_.get())->run(timeout);
 }
 
 ServerParams::ServerParams()
@@ -228,6 +217,28 @@ ClientParams::ClientParams(const ClientParams & other)
 : impl_(boost::make_shared<details::ClientParamsImpl>(*other.impl_.get()))
 {}
 
+ClientParams & ClientParams::domain_participant(dds::dds_entity_traits::DomainParticipant participant)
+{ 
+  impl_->domain_participant(participant);
+  return *this;
+}
+
+ClientParams & ClientParams::service_name(const std::string &service_name)
+{
+  impl_->service_name(service_name);
+  return *this;
+}
+
+const std::string & ClientParams::service_name() const
+{
+  return impl_->service_name();
+}
+
+dds_entity_traits::DomainParticipant ClientParams::domain_participant() const
+{
+  return impl_->domain_participant();
+}
+
 ClientParams & ClientParams::operator = (const ClientParams & that)
 {
   impl_ = boost::make_shared<details::ClientParamsImpl>(*that.impl_.get());
@@ -323,22 +334,22 @@ namespace rpc {
       participant_ = part;
     }
 
-    std::string ServiceParamsImpl::service_name() const
+    const std::string & ServiceParamsImpl::service_name() const
     {
       return service_name_;
     }
 
-    std::string ServiceParamsImpl::instance_name() const
+    const std::string & ServiceParamsImpl::instance_name() const
     {
       return instance_name_;
     }
 
-    std::string ServiceParamsImpl::request_topic_name() const
+    const std::string & ServiceParamsImpl::request_topic_name() const
     {
       return request_topic_name_;
     }
 
-    std::string ServiceParamsImpl::reply_topic_name() const
+    const std::string & ServiceParamsImpl::reply_topic_name() const
     {
       return reply_topic_name_;
     }

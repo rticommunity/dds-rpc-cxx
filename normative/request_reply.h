@@ -353,6 +353,9 @@ public:
 class RequesterParams 
 {
 public:
+    /* Normative: DomainParticipant argument is optional. When it's not provided, either 
+       lookup a default DomainParticipant or create one.
+    */
     RequesterParams ();
     RequesterParams(const RequesterParams & other);
     RequesterParams & operator = (const RequesterParams & that);
@@ -397,6 +400,9 @@ public:
 class ReplierParams 
 {
 public:
+    /* Normative: DomainParticipant argument is optional. When it's not provided, either
+       lookup a default DomainParticipant or create one.
+    */
     ReplierParams ();
     ReplierParams(const ReplierParams & other);
     ReplierParams & operator = (const ReplierParams & that);

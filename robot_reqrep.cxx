@@ -6,6 +6,10 @@
 #include "normative/request_reply.h"
 #include "unique_data.h"
 
+#ifdef RTI_WIN32
+#define strcpy(dst, src) strcpy_s(dst, 255, src);
+#endif
+
 using namespace dds::rpc;
 using namespace robot;
 
@@ -208,58 +212,87 @@ void test_asynchronous_race(
 }
 
 #ifdef USE_AWAIT
-#ifndef RTI_WIN32
+
 future<void> test_await(
     Requester<RobotControl_Request, RobotControl_Reply> & requester)
 {
     helper::unique_data<RobotControl_Request> request;
+    float speed = 0;
+    request->data._d = robot::RobotControl_setSpeed_Hash;
+    request->data._u.setSpeed.speed = speed;
+    requester.send_request_async(*request);
+    
+    printf("before. threadid = %lld\n", RTIOsapiThread_getCurrentThreadID());
+    while (speed < 100)
+    {
+        request->data._d = robot::RobotControl_getSpeed_Hash;
+        dds::Sample<RobotControl_Reply> reply = await requester.send_request_async(*request);
+        speed = reply.data().data._u.getSpeed._u.result.return_;
+        printf("test_await: current speed = %f threadid = %lld\n", 
+               speed,
+               RTIOsapiThread_getCurrentThreadID());
 
-
-
-    request->data._d = robot::RobotControl_getSpeed_Hash;
-    dds::Sample<RobotControl_Reply> reply = await requester.send_request_async(*request);
-    printf("await current speed = %f\n", reply.data().data._u.getSpeed._u.result.return_);
+        request->data._d = robot::RobotControl_setSpeed_Hash;
+        request->data._u.setSpeed.speed = speed + 10;
+        await requester.send_request_async(*request);
+    }
+    printf("after. threadid = %lld\n", RTIOsapiThread_getCurrentThreadID());
 }
-#endif // RTI_WIN32
+
 #endif // USE_AWAIT
 
-void client_rr(int domainid, const std::string & service_name)
+void wait(int seconds)
 {
-  dds::dds_entity_traits::DomainParticipant participant =
-    TheParticipantFactory->create_participant(
-    domainid,
-    DDS::PARTICIPANT_QOS_DEFAULT,
-    NULL /* listener */,
-    DDS::STATUS_MASK_NONE);
+    printf("Waiting %d seconds before testing await.\n", seconds);
+    for (int i = 0; i < seconds; i++)
+    {
+        NDDSUtility::sleep(dds::Duration::from_seconds(1));
+        printf(".");
+    }
+}
 
-  RequesterParams requester_params =
-    dds::rpc::RequesterParams()
-      .domain_participant(participant)
-      .service_name(service_name);
+void client_rr(const std::string & service_name)
+{
+    try {
+        // DomainParticipant construction is optional.
 
-  Requester<RobotControl_Request, RobotControl_Reply>
-    requester(requester_params);
+        RequesterParams requester_params =
+            dds::rpc::RequesterParams()
+            .service_name(service_name);
 
-  NDDSUtility::sleep(dds::Duration::from_seconds(1));
+        Requester<RobotControl_Request, RobotControl_Reply>
+            requester(requester_params);
 
-  helper::unique_data<RobotControl_Request> request;
-  dds::Sample<RobotControl_Reply> reply_sample;
-  int i = 0;
-  float speed = 0;
+        NDDSUtility::sleep(dds::Duration::from_seconds(1));
 
-  test_synchronous_api(requester);
-  test_synchronous_future(requester);
-  test_asynchronous_getSpeed(requester);
-  test_asynchronous_race(requester);
+        helper::unique_data<RobotControl_Request> request;
+        dds::Sample<RobotControl_Reply> reply_sample;
+        int i = 0;
+        float speed = 0;
 
-  printf("Press any key to end the program.\n");
-  getchar();
+        test_synchronous_api(requester);
+        test_synchronous_future(requester);
+        test_asynchronous_getSpeed(requester);
+        test_asynchronous_race(requester);
 
 #ifdef USE_AWAIT
-#ifndef RTI_WIN32
-  // test_await(requester).get();
-#endif // RTI_WIN32
+        wait(3);
+        test_await(requester).get();
+
 #endif // USE_AWAIT
+
+        //printf("Press ENTER to end the program.\n");
+        //getchar();
+
+    }
+    catch (std::exception & ex)
+    {
+        printf("Exception in client_rr: %s\n", ex.what());
+    }
+    catch (...)
+    {
+        printf("Unknown exception in client_rr\n");
+    }
 
 }
 
@@ -368,18 +401,12 @@ public:
 	}
 };
 
-void server_rr(int domainid, const std::string & service_name)
+void server_rr(const std::string & service_name)
 {
-  dds::dds_entity_traits::DomainParticipant participant =
-    TheParticipantFactory->create_participant(
-    domainid,
-    DDS::PARTICIPANT_QOS_DEFAULT,
-    NULL /* listener */,
-    DDS::STATUS_MASK_NONE);
+  // DomainParticipant construction is optional.
 
   ReplierParams replier_params =
     dds::rpc::ReplierParams()
-      .domain_participant(participant)
       .service_name(service_name);
 
   Robot robot;
@@ -397,7 +424,7 @@ void server_rr(int domainid, const std::string & service_name)
       print_request(request.data());
 
       helper::unique_data<RobotControl_Reply> 
-		  reply(robot.process_request(request));
+		    reply(robot.process_request(request));
 
       replier.send_reply(*reply, to_rpc_sample_identity(request.identity()));
     }
