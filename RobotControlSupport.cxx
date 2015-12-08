@@ -228,7 +228,6 @@ namespace dds {
             reply->data._d = 0; // default
           }
 
-          NDDSUtility::sleep(dds::Duration::from_millis(50));
           replier_.send_reply(*reply, to_rpc_sample_identity(request_sample.identity()));
         }
         else

@@ -1,10 +1,101 @@
 #pragma once
 
 #ifdef USE_BOOST_FUTURE
+
 #define BOOST_THREAD_PROVIDES_FUTURE
 #define BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
 #define BOOST_RESULT_OF_USE_DECLTYPE
+
 #include "boost/thread/future.hpp"
+#include <experimental\resumable>
+
+namespace boost {
+
+  template <typename T>
+  bool await_ready(future<T> const & t)
+  {
+    return t.is_ready();
+  }
+
+  template <typename T, typename Callback>
+  void await_suspend(future<T> & t, Callback resume)
+  {
+    t.then([resume](future<T> const &)
+    {
+      resume();
+    });
+  }
+
+  template <typename T>
+  T await_resume(future<T> & t)
+  {
+    return t.get();
+  }
+
+} // namespace boost
+
+namespace std {
+  namespace experimental {
+
+    template <class T, class... Args>
+    struct coroutine_traits<boost::future<T>, Args...>
+    {
+      struct promise_type
+      {
+        boost::promise<T> promise;
+
+        boost::future<T> get_return_object() { return promise.get_future(); }
+        bool initial_suspend() { return false; }
+        bool final_suspend() { return false; }
+
+        void set_exception(std::exception_ptr e) {
+          promise.set_exception(std::move(e));
+        }
+        /*
+        void set_result(T & t) {
+        promise.set_value(t);
+        }
+        void set_result(T && t) {
+        promise.set_value(std::move(t));
+        }
+        */
+        void return_value(T & t) {
+          promise.set_value(t);
+        }
+        void return_value(T && t) {
+          promise.set_value(std::move(t));
+        }
+      };
+    };
+
+    template <class... Args>
+    struct coroutine_traits<boost::future<void>, Args...>
+    {
+      struct promise_type
+      {
+        boost::promise<void> promise;
+
+        boost::future<void> get_return_object() { return promise.get_future(); }
+        bool initial_suspend() { return false; }
+        bool final_suspend() { return false; }
+
+        void set_exception(std::exception_ptr e) {
+          promise.set_exception(std::move(e));
+        }
+        /*
+        void set_result() {
+        promise.set_value();
+        }
+        */
+        void return_void() {
+          promise.set_value();
+        }
+      };
+    };
+
+  } // namespace experimental
+} // namespace std
+
 #endif
 
 #ifdef USE_PPLTASKS
@@ -19,7 +110,7 @@
 
 #include "boost/utility/result_of.hpp"
 
-#endif
+#endif // USE_PPLTASKS
 
 namespace dds {
     namespace rpc {
@@ -29,6 +120,18 @@ namespace dds {
         // Pull future<T> from boost into this namespace.
         using boost::future;
 
+        namespace details {
+
+          template <class T>
+          boost::future<std::decay_t<T>> make_ready_future(T&& t)
+          {
+            typename std::experimental::coroutine_traits<future<std::decay_t<T>>>::promise_type promise;
+            future<std::decay_t<T>> fut = promise.get_return_object();
+            promise.return_value(std::forward<T>(t));
+            return fut;
+          }
+
+        } // namespace details
 #endif 
 
 #ifdef USE_PPLTASKS
@@ -79,11 +182,11 @@ namespace dds {
             future(task<ResultType> && task);
 
             template<typename F>
-            typename details::Unwrapper<typename boost::result_of<F(future &&)>::type>::return_type
+            typename details::Unwrapper<typename std::decay<typename boost::result_of<F(future<ResultType> &&)>::type>::type>::return_type
                 then(F&& func);
 
             template<typename F>
-            typename details::Unwrapper<typename boost::result_of<F(future &&)>::type>::return_type
+            typename details::Unwrapper<typename std::decay<typename boost::result_of<F(future<ResultType> &&)>::type>::type>::return_type
                 then(const F & func);
 
             shared_future<ResultType> share();
@@ -121,6 +224,20 @@ namespace rpc {
     namespace details
     {
 
+        // Unwrapper adapts lambdas passed to .then function such that the return
+        // type of the lambda is something PPL Task library can understand. 
+        // There are two cases: 
+        // (1) If the return type of the lambda is anything but 
+        //     rpc::future<T>, unwrapping is basically a no-op. I.e., unwrap 
+        //     just forwards the closure to the underlying .then(). This includes
+        //     types like int, float, and even task<T>. It works because PPL task
+        //     library knows how to handle lambdas that return task<T>.
+        // (2) If the return type of the lambda is rpc::future<T>, 
+        //     Unwrapper<future<T>>::task_extractor is a lambda adapter that extracts 
+        //     the task<T> out from it so that the PPL task library does not 
+        //     create a ridiculous type like task<rpc::future<T>> when we want
+        //     just rpc::future<T>. Note that PPL task library has no knowledge
+        //     of rpc::future<T>.
         template <typename RetType>
         struct Unwrapper
         {
@@ -224,19 +341,19 @@ namespace rpc {
 
     template<class ResultType>
     template<typename F>
-    typename details::Unwrapper<typename boost::result_of<F(future<ResultType> &&)>::type>::return_type
+    typename details::Unwrapper<typename std::decay<typename boost::result_of<F(future<ResultType> &&)>::type>::type>::return_type
         future<ResultType>::then(F&& func)
     {
-        typedef typename boost::result_of<F(future &&)>::type FRetType;
-        return details::Unwrapper<FRetType>::unwrap(task_, std::move(func));
+        typedef typename std::decay<typename boost::result_of<F(future &&)>::type>::type FRetType;
+        return details::Unwrapper<FRetType>::unwrap(task_, std::forward<F>(func));
     }
 
     template<class ResultType>
     template<typename F>
-    typename details::Unwrapper<typename boost::result_of<F(future<ResultType> &&)>::type>::return_type
+    typename details::Unwrapper<typename std::decay<typename boost::result_of<F(future<ResultType> &&)>::type>::type>::return_type
         future<ResultType>::then(const F & func)
     {
-        typedef typename boost::result_of<F(future &&)>::type FRetType;
+        typedef typename std::decay<typename boost::result_of<F(future &&)>::type>::type FRetType;
         return details::Unwrapper<FRetType>::unwrap(task_, func);
     }
 
@@ -299,6 +416,7 @@ namespace rpc {
 
     namespace details
     {
+
 #ifdef USE_BOOST_FUTURE
 
         using boost::promise;
@@ -308,6 +426,15 @@ namespace rpc {
 #ifdef USE_PPLTASKS
 
         using concurrency::task_completion_event;
+
+        template <class T>
+        future<std::decay_t<T>> make_ready_future(T&& t)
+        {
+          details::promise<std::decay_t<T>> promise;
+          future<std::decay_t<T>> fut = promise.get_future();
+          promise.set_result(std::forward<T>(t));
+          return fut;
+        }
 
         template <class ResultType>
         class promise
@@ -344,16 +471,16 @@ namespace rpc {
             bool initial_suspend()                 { return false; }
             bool final_suspend()                   { return false; }
             void set_result(ResultType & t) {
-                tce_.set_value(t);
+                tce_.set(t);
             }
             void set_result(ResultType && t) {
-                tce_.set_value(std::move(t));
+                tce_.set(std::move(t));
             }
             void return_value(ResultType & t) {
-                tce_.set_value(t);
+                tce_.set(t);
             }
             void return_value(ResultType && t) {
-                tce_.set_value(std::move(t));
+                tce_.set(std::move(t));
             }
         };
 

@@ -241,7 +241,7 @@ class RequesterImpl : public details::ServiceProxyImpl,
 
     static void * execute(void * arg)
     {
-      printf("Created thread = %lld\n", RTIOsapiThread_getCurrentThreadID());
+      printf("execute: Created thread = %lld\n", RTIOsapiThread_getCurrentThreadID());
       
       std::unique_ptr<SyncProxy> sync(static_cast<SyncProxy *>(arg));
 

@@ -265,11 +265,6 @@ void client_rr(const std::string & service_name)
 
         NDDSUtility::sleep(dds::Duration::from_seconds(1));
 
-        helper::unique_data<RobotControl_Request> request;
-        dds::Sample<RobotControl_Reply> reply_sample;
-        int i = 0;
-        float speed = 0;
-
         test_synchronous_api(requester);
         test_synchronous_future(requester);
         test_asynchronous_getSpeed(requester);
@@ -347,8 +342,6 @@ public:
 	helper::unique_data<RobotControl_Reply> process_request(
 		const dds::Sample<RobotControl_Request> & request)
 	{
-    NDDSUtility::sleep(dds::Duration::from_millis(50));
-
 		helper::unique_data<RobotControl_Reply> reply;
 		float oldspeed = speed;
 
@@ -414,6 +407,8 @@ void server_rr(const std::string & service_name)
   Replier<RobotControl_Request, RobotControl_Reply>
     replier(replier_params);
 
+  NDDSUtility::sleep(dds::Duration::from_millis(2000));
+
   while (true)
   {
     dds::Sample<RobotControl_Request> request;
@@ -423,6 +418,7 @@ void server_rr(const std::string & service_name)
     {
       print_request(request.data());
 
+      NDDSUtility::sleep(dds::Duration::from_millis(50));
       helper::unique_data<RobotControl_Reply> 
 		    reply(robot.process_request(request));
 

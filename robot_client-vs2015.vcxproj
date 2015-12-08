@@ -137,8 +137,20 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'" />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">
-    <OutDir>objs\x64Win64vs2015\</OutDir>
-    <IntDir>objs\x64Win64vs2015\</IntDir>
+    <OutDir>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)vs2015\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)vs2015\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)vs2015\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">
+    <OutDir>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)vs2015\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -189,32 +201,35 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <PreprocessorDefinitions>USE_AWAIT;OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>objs\i86Win32vs2015\</AssemblerListingLocation>
-      <ObjectFileName>objs\i86Win32vs2015\</ObjectFileName>
-      <ProgramDataBaseFileName>objs\i86Win32vs2015\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>msvcrtd.lib;legacy_stdio_definitions.lib;rticonnextmsgcppd.lib;nddscppd.lib;nddscd.lib;nddscored.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>objs\i86Win32vs2015\robot_test.exe</OutputFile>
+      <AdditionalDependencies>rticonnextmsgcppzd.lib;nddscppzd.lib;nddsczd.lib;nddscorezd.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)$(Platform)vs2015\$(Configuration)\robot_test.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(NDDSHOME)\lib\x64Win64vs2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOSTHOME)/lib64-msvc-14.0;$(NDDSHOME)\lib\x64Win64vs2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>objs\i86Win32vs2015\robot_test.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <AdditionalOptions>/VERBOSE:LIB %(AdditionalOptions)</AdditionalOptions>
     </Link>
@@ -268,16 +283,16 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>USE_AWAIT;OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_PPLTASKS;USE_AWAIT;OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_RTI_CONNEXT;NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>objs\x64Win64vs2015\</AssemblerListingLocation>
-      <ObjectFileName>objs\i86Win32vs2015\</ObjectFileName>
-      <ProgramDataBaseFileName>objs\x64Win64vs2015\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -290,12 +305,13 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>rticonnextmsgcppd.lib;nddscppd.lib;nddscd.lib;nddscored.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>objs\x64Win64vs2015\robot_test.exe</OutputFile>
+      <AdditionalDependencies>libboost_thread-vc140-mt-gd-1_59.lib;rticonnextmsgcppd.lib;nddscppd.lib;nddscd.lib;nddscored.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)$(Platform)vs2015\$(Configuration)\robot_test.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(NDDSHOME)\lib\x64Win64vs2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(BOOSTHOME)/lib64-msvc-14.0;$(NDDSHOME)\lib\x64Win64vs2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>objs\x64Win64vs2015\robot_client.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -348,7 +364,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;WIN32;RTI_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_PPLTASKS;USE_AWAIT;OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_RTI_CONNEXT;WIN32;RTI_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -356,23 +372,25 @@
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>objs\i86Win32vs2015\</AssemblerListingLocation>
-      <ObjectFileName>objs\i86Win32vs2015\</ObjectFileName>
-      <ProgramDataBaseFileName>objs\i86Win32vs2015\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;rticonnextmsgcppz.lib;;nddscppz.lib;nddscz.lib;nddscorez.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>objs\i86Win32vs2015\robot_client.exe</OutputFile>
+      <AdditionalDependencies>libboost_thread-vc140-mt-s-1_59.lib;legacy_stdio_definitions.lib;rticonnextmsgcppz.lib;;nddscppz.lib;nddscz.lib;nddscorez.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)$(Platform)vs2015\$(Configuration)\robot_test.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(NDDSHOME)\lib\x64Win64vs2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ProgramDatabaseFile>objs\i86Win32vs2015\robot_client.pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(BOOSTHOME)/lib64-msvc-14.0;;$(NDDSHOME)\lib\x64Win64vs2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -424,8 +442,8 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(BOOSTHOME);$(NDDSHOME)\include;$(NDDSHOME)\include\ndds;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_AWAIT;OMG_DDS_RPC_REFERENCE_IMPLEMENTATION;OMG_DDS_RPC_BASIC_PROFILE;USE_OPTIONAL_RPC_API;USE_PPLTASKS;USE_RTI_CONNEXT;NDDS_DLL_VARIABLE;WIN32_LEAN_AND_MEAN;WIN32;RTI_WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -433,23 +451,25 @@
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>objs\i86Win32vs2015\</AssemblerListingLocation>
-      <ObjectFileName>objs\i86Win32vs2015\</ObjectFileName>
-      <ProgramDataBaseFileName>objs\i86Win32vs2015\</ProgramDataBaseFileName>
+      <AssemblerListingLocation>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>$(SolutionDir)$(Platform)vs2015\$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
+      <AdditionalOptions>/await %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>nddscpp.lib;nddsc.lib;nddscore.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>objs\i86Win32vs2015\robot_client.exe</OutputFile>
+      <AdditionalDependencies>libboost_thread-vc140-mt-gd-1_59.lib;rticonnextmsgcpp.lib;nddscpp.lib;nddsc.lib;nddscore.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)$(Platform)vs2015\$(Configuration)\robot_test.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(NDDSHOME)\lib\x64Win64VS2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ProgramDatabaseFile>objs\i86Win32vs2015\robot_client.pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>$(BOOSTHOME)/lib64-msvc-14.0;$(NDDSHOME)\lib\x64Win64VS2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>
+      </ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>

@@ -111,6 +111,63 @@ T & remove_const(const T & t)
   return const_cast<T &>(t);
 }
 
+dds::rpc::future<float> speedup_until_maxspeed(
+  robot::RobotControlSupport::Client & robot_client)
+{
+  static const int increment = 10;
+
+  return
+    robot_client
+      .getSpeed_async()
+      .then([robot_client](future<float> && speed_fut) 
+      {
+        float speed = speed_fut.get();
+        if (speed + increment <= MAX_SPEED)
+        {
+          printf("speedup_until_maxspeed: new speed = %f\n", speed + increment);
+          return remove_const(robot_client).setSpeed_async(speed + increment);
+        }
+        else
+          return dds::rpc::details::make_ready_future(speed);
+      })
+      .then([robot_client](future<float> && speed_fut) {
+        float speed = speed_fut.get();
+        if (speed + increment <= MAX_SPEED)
+          return speedup_until_maxspeed(remove_const(robot_client));
+        else
+          return dds::rpc::details::make_ready_future(speed);
+      });
+}
+
+dds::rpc::future<float> test_recursive(
+  robot::RobotControlSupport::Client & robot_client)
+{
+  robot_client.setSpeed(0);
+
+  return speedup_until_maxspeed(robot_client);
+}
+
+#ifdef USE_AWAIT
+
+dds::rpc::future<void> test_iterative_await(
+  robot::RobotControlSupport::Client & robot_client)
+{
+  static const int increment = 1;
+  float speed = 0;
+
+  robot_client.setSpeed(0);
+
+  while ((speed = await robot_client.getSpeed_async()) + increment <= MAX_SPEED)
+  {
+    printf("test_iterative_await: thread id = %lld\n", RTIOsapiThread_getCurrentThreadID());
+    await robot_client.setSpeed_async(speed + increment);
+    printf("test_iterative_await: current speed = %f, thread id = %lld\n", 
+           speed + increment, RTIOsapiThread_getCurrentThreadID());
+  }
+}
+
+#endif // USE_AWAIT
+
 void test_asynchronous(robot::RobotControlSupport::Client & robot_client)
 {
   try {
@@ -120,6 +177,7 @@ void test_asynchronous(robot::RobotControlSupport::Client & robot_client)
       robot_client
         .getSpeed_async()
         .then([robot_client](future<float> && speed_fut) {
+              printf("Callback1 thread id = %lld\n", RTIOsapiThread_getCurrentThreadID());
               float speed = speed_fut.get();
               printf("test_asynchronous: getSpeed = %f\n", speed);
               speed *= 2;
@@ -127,6 +185,7 @@ void test_asynchronous(robot::RobotControlSupport::Client & robot_client)
           })
         .then([](future<float> && speed_fut) {
             try {
+              printf("Callback2 thread id = %lld\n", RTIOsapiThread_getCurrentThreadID());
               float speed = speed_fut.get();
             }
             catch (TooFast &)
@@ -135,7 +194,7 @@ void test_asynchronous(robot::RobotControlSupport::Client & robot_client)
             }
           });
 
-      NDDSUtility::sleep(dds::Duration::from_millis(1000));
+      NDDSUtility::sleep(dds::Duration::from_millis(100));
     }
   }
   catch (std::exception & ex)
@@ -161,7 +220,7 @@ void test_synchronous(robot::RobotControlSupport::Client & robot_client)
         speed = robot_client.getSpeed();
         printf("getSpeed = %f\n", speed);
         speed *= 2;
-        NDDSUtility::sleep(dds::Duration::from_millis(1000));
+        //NDDSUtility::sleep(dds::Duration::from_millis(1000));
       }
       catch (robot::TooFast &) {
         speed = 1;
@@ -196,7 +255,7 @@ future<void> test_await(robot::RobotControlSupport::Client & robot_client)
     float speed = await robot_client.getSpeed_async();
     float oldspeed = await robot_client.setSpeed_async(speed + 2);
     assert(speed == oldspeed);
-    printf("test_await: old speed = %f", oldspeed);
+    printf("test_await: old speed = %f\n", oldspeed);
   }
 }
 
@@ -204,19 +263,27 @@ future<void> test_await(robot::RobotControlSupport::Client & robot_client)
 
 void client_func(const std::string & service_name)
 {
-  robot::RobotControlSupport::Client robot_client;
+  try {
+    robot::RobotControlSupport::Client robot_client;
 
-  NDDSUtility::sleep(dds::Duration::from_millis(1000));
+    NDDSUtility::sleep(dds::Duration::from_millis(1000));
 
-  test_conversions(robot_client);
-  test_synchronous(robot_client);
-  test_asynchronous(robot_client);
+    test_conversions(robot_client);
+    test_synchronous(robot_client);
+    test_asynchronous(robot_client);
+    test_recursive(robot_client).get();
 
 #ifdef USE_AWAIT
-  test_await(robot_client).get();
+    //test_await(robot_client).get();
+    test_iterative_await(robot_client).get();
 #endif 
 
-  printf("Press ENTER to end the program.\n");
-  getchar();
+    printf("Press ENTER to end the program.\n");
+    getchar();
+  }
+  catch (...)
+  {
+    printf("Exception in main.\n");
+  }
 }
 
