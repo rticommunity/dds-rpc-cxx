@@ -10,3 +10,6 @@ In December 2014, OMG adopted (but not finalized) the RPC-over-DDS specification
 3. normative/sample.h
 4. ./RobotControlSupport.h (shows an example of what's normative in a "Support" class. RobotControl itself is not normative.)
 
+### C++ await 
+
+If you are testing C++ await feature in Visual Studio 2015, use x64Win64VS2015 libaries.

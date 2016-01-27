@@ -388,18 +388,20 @@ namespace rpc {
     template<class ResultType>
     bool future<ResultType>::is_ready() const
     {
-        return task_.is_done();
+      return task_.is_done();
     }
 
     template <typename T>
     bool await_ready(future<T> const & t)
     {
+        //printf("await_ready %p\n", &t);
         return t.is_ready();
     }
 
     template <typename T, typename Callback>
     void await_suspend(future<T> & t, Callback resume)
     {
+        //printf("await_suspend %p\n", &t);
         t.then([resume](future<T> const &)
         {
            resume();
@@ -409,6 +411,7 @@ namespace rpc {
     template <typename T>
     T await_resume(future<T> & t)
     {
+        //printf("await_resume %p\n", &t);
         return t.get();
     }
 
@@ -426,15 +429,6 @@ namespace rpc {
 #ifdef USE_PPLTASKS
 
         using concurrency::task_completion_event;
-
-        template <class T>
-        future<std::decay_t<T>> make_ready_future(T&& t)
-        {
-          details::promise<std::decay_t<T>> promise;
-          future<std::decay_t<T>> fut = promise.get_future();
-          promise.set_result(std::forward<T>(t));
-          return fut;
-        }
 
         template <class ResultType>
         class promise
@@ -521,6 +515,23 @@ namespace rpc {
             void set_result()                { set_value(); }
             void return_void()               { set_value(); }
         };
+
+        template <class T>
+        future<std::decay_t<T>> make_ready_future(T&& t)
+        {
+          details::promise<std::decay_t<T>> promise;
+          future<std::decay_t<T>> fut = promise.get_future();
+          promise.set_result(std::forward<T>(t));
+          return fut;
+        }
+
+        inline future<void> make_ready_future()
+        {
+          details::promise<void> promise;
+          future<void> fut = promise.get_future();
+          promise.set_result();
+          return fut;
+        }
 
 #endif // USE_PPLTASKS
     
